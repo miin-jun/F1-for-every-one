@@ -894,3 +894,441 @@ body.modal-open .signup-link {
     height: 43px !important;
     padding: 0 44px 0 14px !important;
 }
+
+/* 로그인 비밀번호 오류 메시지 */
+
+.password-field.error input[type="text"] {
+    border-color: #ff1f16 !important;
+}
+
+#loginPasswordError {
+    margin: 2px 0 0 4px;
+
+    color: #ff1f16;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#loginPasswordError.hidden {
+    display: none;
+}
+
+/* 비밀번호 오류 메시지 위치 최종 보정 */
+
+/* 로그인 form 전체 간격 줄이기 */
+.login-form {
+    gap: 15px !important;
+}
+
+/* 비밀번호 오류 메시지 */
+#loginPasswordError {
+    margin: -4px 0 0 4px !important;
+
+    color: #ff1f16;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+/* 오류 메시지 아래 비밀번호 찾기 | 회원가입 위치 */
+.login-modal-links {
+    margin: 4px 0 12px !important;
+}
+
+/* 비밀번호 찾기 모달 */
+
+.password-find-modal-box,
+.password-reset-modal-box {
+    width: 390px;
+    padding: 46px 34px 38px;
+
+    background-color: rgba(48, 48, 48, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 22px;
+
+    text-align: center;
+}
+
+.password-find-modal-box h2,
+.password-reset-modal-box h2 {
+    margin: 0 0 34px;
+
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 500;
+}
+
+.password-find-form,
+.password-reset-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.password-find-field {
+    width: 100%;
+    text-align: left;
+}
+
+.password-find-field label {
+    display: block;
+    margin: 0 0 7px 2px;
+
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.password-email-row {
+    display: flex;
+    gap: 8px;
+}
+
+.password-email-row input {
+    flex: 1;
+    height: 43px;
+    padding: 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+
+    font-size: 13px;
+}
+
+.password-email-row input::placeholder,
+.reset-code-box input::placeholder,
+.password-reset-form input::placeholder {
+    color: rgba(255, 255, 255, 0.48);
+}
+
+.send-code-btn {
+    width: 58px;
+    height: 43px;
+
+    border: none;
+    border-radius: 9px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.send-code-btn:hover {
+    background-color: #e91810;
+}
+
+.reset-code-box {
+    position: relative;
+    width: 100%;
+}
+
+.reset-code-box input {
+    width: 100%;
+    height: 43px;
+    padding: 0 58px 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+
+    font-size: 13px;
+}
+
+.code-timer {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+
+    transform: translateY(-50%);
+
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+}
+
+.code-timer.expired {
+    color: #ff1f16;
+}
+
+.password-find-confirm-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 4px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.password-find-confirm-btn:hover {
+    background-color: #e91810;
+}
+
+.password-reset-form input {
+    width: 100%;
+    height: 43px;
+    padding: 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+
+    font-size: 13px;
+}
+
+.password-reset-form .primary-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 4px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.input-success {
+    margin: 7px 0 0 4px;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.input-success.hidden,
+.input-error.hidden,
+.code-timer.hidden {
+    display: none;
+}
+
+#resetEmailInput.input-error-active,
+#resetCodeInput.input-error-active {
+    border-color: #ff1f16 !important;
+}
+
+/* 인증코드 전송 성공 메시지 */
+.input-success {
+    margin: 7px 0 0 4px;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+/* 종이비행기 아이콘 */
+.paper-plane-icon {
+    width: 13px;
+    height: 13px;
+
+    fill: none;
+    stroke: #ff1f16;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    transform: translateY(1px);
+}
+
+/* 비밀번호 찾기 - 이메일 입력창 안쪽 전송 버튼 */
+
+.password-email-row {
+    position: relative;
+    width: 100%;
+    display: block;
+}
+
+/* 이메일 입력창 */
+.password-email-row input {
+    width: 100%;
+    height: 43px;
+    padding: 0 72px 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+
+    font-size: 13px;
+}
+
+.password-email-row input::placeholder {
+    color: rgba(255, 255, 255, 0.48);
+}
+
+/* input 안쪽 오른쪽에 들어가는 전송 버튼 */
+.password-email-row .send-code-btn {
+    position: absolute;
+    top: 50%;
+    right: 7px;
+
+    transform: translateY(-50%);
+
+    width: 50px;
+    height: 29px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.password-email-row .send-code-btn:hover {
+    background-color: #e91810;
+}
+
+/* 비밀번호 찾기 모달 두께/색상 보정 */
+
+/* 모달 박스 크기와 색상 */
+.password-find-modal-box,
+.password-reset-modal-box {
+    width: 390px !important;
+    padding: 42px 34px 34px !important;
+
+    background-color: rgba(38, 38, 38, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 22px !important;
+}
+
+/* 제목 굵기 조정 */
+.password-find-modal-box h2,
+.password-reset-modal-box h2 {
+    margin: 0 0 30px !important;
+
+    font-size: 26px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+}
+
+/* 폼 간격 줄이기 */
+.password-find-form,
+.password-reset-form {
+    gap: 12px !important;
+}
+
+/* 라벨 */
+.password-find-field label {
+    margin: 0 0 6px 2px !important;
+
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+/* 이메일 입력창 */
+.password-email-row input {
+    height: 43px !important;
+    padding: 0 72px 0 14px !important;
+
+    background-color: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 9px !important;
+
+    color: #ffffff !important;
+    font-size: 13px !important;
+}
+
+/* 인증코드 입력창 */
+.reset-code-box input {
+    height: 43px !important;
+    padding: 0 58px 0 14px !important;
+
+    background-color: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 9px !important;
+
+    color: #ffffff !important;
+    font-size: 13px !important;
+}
+
+/* 새 비밀번호 설정 입력창 */
+.password-reset-form input {
+    height: 43px !important;
+    padding: 0 14px !important;
+
+    background-color: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 9px !important;
+
+    color: #ffffff !important;
+    font-size: 13px !important;
+}
+
+/* placeholder 색상 */
+.password-email-row input::placeholder,
+.reset-code-box input::placeholder,
+.password-reset-form input::placeholder {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* 전송 버튼 */
+.password-email-row .send-code-btn {
+    width: 50px !important;
+    height: 29px !important;
+
+    right: 7px !important;
+
+    background-color: #ff1f16 !important;
+    border-radius: 8px !important;
+
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+
+/* 확인 버튼 */
+.password-find-confirm-btn,
+.password-reset-form .primary-btn {
+    height: 38px !important;
+    margin-top: 4px !important;
+
+    background-color: #ff1f16 !important;
+    border-radius: 8px !important;
+
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+/* 오류 메시지 */
+.password-find-field .input-error,
+.password-find-field .input-success {
+    margin: 6px 0 0 4px !important;
+
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+
+/* 에러 테두리 */
+#resetEmailInput.input-error-active,
+#resetCodeInput.input-error-active {
+    border-color: #ff1f16 !important;
+}
