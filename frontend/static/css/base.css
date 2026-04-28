@@ -1,3 +1,4 @@
+
 /* 모든 페이지 공통된 스타일 (폰트, 색상, 로고) */
 
 /* 전체 요소 기본 설정 */
@@ -67,4 +68,45 @@ input {
 /* 숨김 처리 */
 .hidden {
     display: none;
+=======
+/* 모든 페이지 공통된 스타일 (폰트, 색상 , 로고) */
+
+
+body {
+    background-image: url('../images/background.png');
+    background-size: cover;      
+    background-position: center; 
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
+
+.logo {
+    position: fixed;   
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+.logo img {
+    width: 40px;   
+    height: 40px;
+
 }
