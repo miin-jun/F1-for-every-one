@@ -1,2 +1,27 @@
 {% comment %} 페이지에서 반복되는 부분
 ex) 헤더, 사이드바, 로고 등 {% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For everyOne</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock %}  <!-- 각 페이지 추가 CSS -->
+  </head>
+  <body>
+
+    <!-- 로고 -->
+    <div class="logo">
+      <img src="{% static 'images/logo.png' %}" alt="logo">
+    </div>
+
+    <!-- 각 페이지 내용이 여기 들어옴 -->
+    {% block content %}
+    {% endblock %}
+    
+    {% block extra_js %}{% endblock %}  <!-- 각 페이지 추가 JS -->
+  </body>
+</html>
