@@ -1,3 +1,38 @@
+
+{% load static %}
+
+{% comment %}
+페이지에서 반복되는 부분
+ex) 헤더, 사이드바, 로고 등
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}For everyOne{% endblock %}</title>
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+    <!-- 페이지별 CSS -->
+    {% block extra_css %}
+    {% endblock %}
+</head>
+
+<body>
+    {% block content %}
+    {% endblock %}
+
+    {% block modal %}
+    {% endblock %}
+
+    {% block extra_js %}
+    {% endblock %}
+</body>
+=======
 {% comment %} 페이지에서 반복되는 부분
 ex) 헤더, 사이드바, 로고 등 {% endcomment %}
 
