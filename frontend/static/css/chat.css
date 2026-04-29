@@ -1,4 +1,6 @@
-/* 채팅 페이지 전용 스타일 */
+/* ==============================
+   채팅 페이지 전용 스타일
+============================== */
 
 * {
     box-sizing: border-box;
@@ -12,8 +14,9 @@ body {
 
 .chat-page {
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
+    overflow: hidden;
     color: #ffffff;
 
     background:
@@ -47,9 +50,9 @@ body {
 }
 
 .chat-sidebar.collapsed {
-    width: 80px !important;
-    min-width: 80px !important;
-    padding: 28px 0 20px !important;
+    width: 80px;
+    min-width: 80px;
+    padding: 28px 0 20px;
 }
 
 .sidebar-top {
@@ -73,24 +76,22 @@ body {
     justify-content: center;
 }
 
-/* 사이드바 토글 버튼 */
 .sidebar-toggle {
-    width: 34px !important;
-    height: 34px !important;
-    padding: 0 !important;
+    width: 34px;
+    height: 34px;
+    padding: 0;
 
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    border: none !important;
-    background: transparent !important;
-
-    cursor: pointer !important;
+    border: none;
+    background: transparent;
+    cursor: pointer;
 }
 
 .sidebar-toggle span {
-    display: none !important;
+    display: none;
 }
 
 .sidebar-toggle-svg {
@@ -108,7 +109,6 @@ body {
     stroke: #ffffff;
 }
 
-/* 새 채팅 버튼 */
 .new-chat-btn {
     margin-top: 36px;
 
@@ -139,7 +139,7 @@ body {
 }
 
 /* ==============================
-   히스토리 영역
+   히스토리
 ============================== */
 
 .history-section {
@@ -158,24 +158,6 @@ body {
     color: #ffffff;
     font-size: 24px;
     font-weight: 500;
-}
-
-.history-actions {
-    margin-left: auto;
-
-    display: flex;
-    align-items: center;
-    gap: 0;
-}
-
-/* 쓰레기통이 왼쪽 */
-.history-delete-btn {
-    order: 1;
-}
-
-/* ... 버튼이 오른쪽 */
-.history-more-btn {
-    order: 2;
 }
 
 .history-delete-btn,
@@ -198,16 +180,9 @@ body {
 }
 
 .history-delete-btn {
-    order: 1;
-    transform: translateX(35px) !important;
+    transform: translateX(35px);
 }
 
-.history-more-btn {
-    order: 2;
-    transform: none !important;
-}
-
-/* 쓰레기통 아이콘 */
 .history-delete-btn svg {
     width: 18px;
     height: 18px;
@@ -219,7 +194,6 @@ body {
     stroke-linejoin: round;
 }
 
-/* ... 아이콘 */
 .history-more-btn {
     font-size: 20px;
 }
@@ -302,48 +276,40 @@ body {
 
 .chat-sidebar.collapsed .sidebar-logo,
 .chat-sidebar.collapsed .sidebar-logo-link {
-    display: none !important;
+    display: none;
 }
 
 .chat-sidebar.collapsed .sidebar-top {
-    justify-content: center !important;
+    justify-content: center;
 }
 
 .chat-sidebar.collapsed .new-chat-btn {
-    width: 100% !important;
-    margin-top: 34px !important;
+    width: 100%;
+    margin-top: 34px;
 
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-
-    padding: 8px 0 !important;
+    justify-content: center;
+    padding: 8px 0;
 }
 
 .chat-sidebar.collapsed .new-chat-text {
-    display: none !important;
+    display: none;
 }
 
 .chat-sidebar.collapsed .plus-circle {
-    width: 22px !important;
-    height: 22px !important;
+    width: 22px;
+    height: 22px;
 
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.86);
+    color: rgba(255, 255, 255, 0.9);
 
-    border: 1.5px solid rgba(255, 255, 255, 0.86) !important;
-    border-radius: 50% !important;
-
-    color: rgba(255, 255, 255, 0.9) !important;
-    font-size: 17px !important;
-    line-height: 1 !important;
+    font-size: 17px;
+    line-height: 1;
 }
 
 .chat-sidebar.collapsed .history-section,
 .chat-sidebar.collapsed .user-info,
 .chat-sidebar.collapsed .sidebar-bottom {
-    display: none !important;
+    display: none;
 }
 
 /* ==============================
@@ -395,30 +361,45 @@ body {
     cursor: pointer;
 }
 
+.settings-btn:hover {
+    color: #ffffff;
+}
+
 /* ==============================
    설정 메뉴
 ============================== */
 
-.settings-menu {
+.settings-panel {
     position: absolute;
-    left: 118px;
+    left: 0;
     bottom: 34px;
+
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+
+    z-index: 100;
+}
+
+.settings-panel.hidden,
+.settings-sub-menu.hidden {
+    display: none;
+}
+
+.settings-panel .settings-menu,
+.settings-panel .settings-sub-menu {
+    position: relative;
 
     width: 150px;
     padding: 8px;
 
     border-radius: 8px;
-    background-color: rgba(48, 48, 48, 0.95);
+    background-color: rgba(48, 48, 48, 0.96);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-
-    z-index: 20;
 }
 
-.settings-sub-menu {
-    width: 150px;
-}
-
-.settings-row {
+.settings-row,
+.settings-row-main {
     width: 100%;
     height: 30px;
     padding: 0 7px;
@@ -433,40 +414,113 @@ body {
 
     color: rgba(255, 255, 255, 0.74);
     font-size: 12px;
+    font-weight: 400;
     text-align: left;
 
     cursor: pointer;
 }
 
-.settings-row:hover {
+.settings-row:not(.settings-row-with-arrow):hover {
     background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.settings-row-with-arrow {
+    width: 100%;
+    height: 30px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+
+    border-radius: 6px;
+    background: transparent;
+}
+
+.settings-row-with-arrow:hover,
+.settings-row-main:hover,
+.settings-row-disabled:hover {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.74);
+}
+
+.settings-row-disabled {
+    cursor: default;
+    pointer-events: none;
 }
 
 .settings-icon {
-    width: 16px;
-    text-align: center;
-    opacity: 0.9;
+    width: 17px;
+    min-width: 17px;
+    height: 17px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 1;
 }
 
-.settings-arrow {
-    margin-left: auto;
+.settings-icon svg {
+    width: 17px;
+    height: 17px;
 
-    width: 16px;
-    height: 16px;
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.52);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.settings-row:not(.settings-row-with-arrow):hover .settings-icon svg {
+    stroke: rgba(255, 255, 255, 0.78);
+}
+
+.settings-row-disabled .settings-icon svg,
+.settings-row-with-arrow:hover .settings-icon svg {
+    stroke: rgba(255, 255, 255, 0.52);
+}
+
+.settings-arrow-btn {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-right: 3px;
+    padding: 0;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.75);
 
-    color: #ffffff;
-    font-size: 16px;
+    cursor: pointer;
+    box-shadow: none;
+    outline: none;
+}
+
+.settings-arrow-btn:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+.settings-arrow-btn svg {
+    width: 14px;
+    height: 14px;
+
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.82);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* ==============================
-   메인 영역
+   메인 채팅 영역
 ============================== */
 
 .chat-main {
@@ -474,12 +528,16 @@ body {
 
     flex: 1;
     min-width: 0;
-    height: 100vh;
+    height: 103vh;
 
-    padding: 90px 42px 26px;
+    padding: 0;
+
+    overflow: hidden;
 }
 
 .chat-intro {
+    margin-top: 80px;
+
     text-align: center;
     user-select: none;
 }
@@ -500,17 +558,31 @@ body {
 
 /* ==============================
    채팅 메시지 영역
+   - 스크롤은 여기에서만 발생
+   - 오른쪽 끝은 입력창과 맞춤
 ============================== */
 
-.chat-message-area {
+.chat-scroll-area {
     position: absolute;
-    top: 120px !important;
-    left: 42px;
-    right: 42px;
-    bottom: 230px !important;
+
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 155px;
+
+    padding: 0 42px 32px 42px;
 
     overflow-y: auto;
-    padding: 0 30px 10px !important;
+    overflow-x: hidden;
+}
+
+.chat-message-area {
+    width: 100%;
+    min-height: 100%;
+
+    padding: 0;
+
+    overflow: visible;
 }
 
 .chat-message {
@@ -519,39 +591,49 @@ body {
     width: fit-content;
     max-width: 68%;
 
-    margin-bottom: 34px !important;
-    padding: 14px 18px !important;
+    margin-bottom: 34px;
+    padding: 14px 18px;
 
-    border-radius: 7px !important;
+    border-radius: 7px;
 
-    color: #ffffff !important;
-    font-size: 14px !important;
-    line-height: 1.6 !important;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.6;
 
-    word-break: keep-all;
-    white-space: pre-line;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
 }
 
-.chat-message.user {
-    margin-left: auto !important;
-    margin-right: 0 !important;
+.chat-message-text {
+    display: block;
+    max-width: 100%;
 
-    background-color: rgba(90, 90, 90, 0.94) !important;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.chat-message.user {
+    margin-left: auto;
+    margin-right: 0;
+
+    background-color: rgba(90, 90, 90, 0.94);
 }
 
 .chat-message.bot {
-    margin-left: 0 !important;
-    margin-right: auto !important;
+    margin-left: 0;
+    margin-right: auto;
 
-    max-width: 660px !important;
+    max-width: 660px;
 
     background: linear-gradient(
         135deg,
         rgba(92, 92, 92, 0.96),
         rgba(112, 95, 95, 0.9)
-    ) !important;
+    );
 }
 
 .chat-message-time {
@@ -577,9 +659,12 @@ body {
 
 .recommend-section {
     position: absolute;
+
     left: 42px;
     right: 42px;
-    bottom: 175px !important;
+    bottom: 165px;
+
+    width: auto;
 }
 
 .recommend-section h3 {
@@ -593,21 +678,21 @@ body {
 .recommend-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px !important;
+    gap: 20px;
 }
 
 .recommend-list button {
-    min-height: 44px !important;
-    padding: 11px 16px !important;
+    min-height: 44px;
+    padding: 11px 16px;
 
     border: none;
-    border-radius: 7px !important;
+    border-radius: 7px;
 
-    background-color: rgba(255, 255, 255, 0.68) !important;
-    color: rgba(0, 0, 0, 0.58) !important;
+    background-color: rgba(255, 255, 255, 0.68);
+    color: rgba(0, 0, 0, 0.58);
 
-    font-size: 12px !important;
-    line-height: 1.35 !important;
+    font-size: 12px;
+    line-height: 1.35;
     text-align: left;
 
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
@@ -615,28 +700,36 @@ body {
 }
 
 .recommend-list button:hover {
-    background-color: rgba(255, 255, 255, 0.82) !important;
+    background-color: rgba(255, 255, 255, 0.82);
 }
 
 /* ==============================
    입력창
+   - 오른쪽 끝을 메시지 영역과 맞춤
 ============================== */
 
 .chat-input-area {
     position: absolute;
+
     left: 42px;
     right: 42px;
-    bottom: 54px !important;
+    bottom: 34px;
+
+    width: auto;
+    padding: 0;
+
+    z-index: 50;
 }
 
 .chat-input-box {
-    height: 56px !important;
-    padding: 0 14px 0 22px;
+    width: 100%;
+    height: 56px;
+    padding: 0 18px 0 22px;
 
     display: flex;
     align-items: center;
 
-    border-radius: 8px !important;
+    border-radius: 8px;
     background-color: #ffffff;
 
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
@@ -659,7 +752,7 @@ body {
 .chat-input-actions {
     display: flex;
     align-items: center;
-    gap: 8px !important;
+    gap: 8px;
 }
 
 #textCount {
@@ -669,21 +762,21 @@ body {
 
 .mic-btn,
 .send-btn {
-    width: 28px !important;
-    height: 28px !important;
-    padding: 0 !important;
+    width: 28px;
+    height: 28px;
+    padding: 0;
 
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    background: transparent !important;
-    border: none !important;
+    background: transparent;
+    border: none;
 
     color: #111111;
     font-size: 17px;
 
-    cursor: pointer !important;
+    cursor: pointer;
 }
 
 .mic-btn svg,
@@ -699,8 +792,7 @@ body {
 }
 
 .send-btn {
-    border: none !important;
-    border-radius: 0 !important;
+    border-radius: 0;
 
     font-size: 16px;
     font-weight: 700;
@@ -712,7 +804,7 @@ body {
 }
 
 .chat-notice {
-    margin: 10px 0 0;
+    margin: 24px 0 0;
 
     color: rgba(255, 255, 255, 0.42);
     font-size: 10px;
@@ -743,359 +835,6 @@ body {
     }
 
     .recommend-section {
-        bottom: 130px !important;
+        bottom: 165px;
     }
-}
-
-/* ==============================
-   설정 메뉴 최종 보정
-   - > 클릭 시 기존 창 바로 오른쪽에 두 번째 창 표시
-   - > 버튼 형광 제거
-   - 메뉴 UI 기존 톤 유지
-============================== */
-
-.sidebar-bottom {
-    position: relative;
-}
-
-/* 설정 패널 전체 */
-.settings-panel {
-    position: absolute !important;
-    left: 0 !important;
-    bottom: 34px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    gap: 8px !important;
-
-    z-index: 100 !important;
-}
-
-/* 숨김 처리 */
-.settings-panel.hidden,
-.settings-sub-menu.hidden {
-    display: none !important;
-}
-
-/* 왼쪽/오른쪽 메뉴 공통 */
-.settings-panel .settings-menu,
-.settings-panel .settings-sub-menu {
-    position: relative !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-
-    width: 150px !important;
-    padding: 8px !important;
-
-    border-radius: 8px !important;
-    background-color: rgba(48, 48, 48, 0.96) !important;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38) !important;
-}
-
-/* 메뉴 한 줄 */
-.settings-row {
-    width: 100% !important;
-    height: 30px !important;
-    padding: 0 7px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-
-    border: none !important;
-    border-radius: 6px !important;
-    background: transparent !important;
-
-    color: rgba(255, 255, 255, 0.74) !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    text-align: left !important;
-
-    cursor: pointer !important;
-}
-
-.settings-row:hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* 내 정보 줄 */
-.settings-row-with-arrow {
-    width: 100% !important;
-    height: 30px !important;
-    padding: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 4px !important;
-
-    border-radius: 6px !important;
-    background: transparent !important;
-}
-
-/* 내 정보 텍스트 영역 */
-.settings-row-main {
-    flex: 1 !important;
-    height: 30px !important;
-    padding: 0 7px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-
-    border: none !important;
-    border-radius: 6px !important;
-    background: transparent !important;
-
-    color: rgba(255, 255, 255, 0.74) !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    text-align: left !important;
-
-    cursor: pointer !important;
-}
-
-.settings-row-main:hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* 아이콘 */
-.settings-icon {
-    width: 16px !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    color: rgba(255, 255, 255, 0.55) !important;
-    font-size: 13px !important;
-    opacity: 0.9 !important;
-}
-
-/* > 버튼: 형광 제거하고 기존 회색 버튼처럼 */
-.settings-arrow-btn,
-.settings-arrow {
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    margin-right: 4px !important;
-    padding: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border: none !important;
-    border-radius: 5px !important;
-
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.72) !important;
-
-    font-size: 16px !important;
-    line-height: 1 !important;
-    font-weight: 400 !important;
-
-    cursor: pointer !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-.settings-arrow-btn:hover,
-.settings-arrow:hover {
-    background-color: rgba(255, 255, 255, 0.16) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* 톱니바퀴 버튼 기존 느낌 */
-.settings-btn {
-    width: 28px !important;
-    height: 28px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border: none !important;
-    background: transparent !important;
-    color: rgba(255, 255, 255, 0.75) !important;
-
-    font-size: 18px !important;
-    cursor: pointer !important;
-}
-
-.settings-btn:hover {
-    color: #ffffff !important;
-}
-/* ==============================
-   설정 메뉴 UI 최종 수정
-   - 4개 항목 UI 통일
-   - 내 정보 hover 변화 제거
-   - > 버튼 기존 회색 톤
-   - 오른쪽 창은 기존 창 바로 우측에 표시
-============================== */
-
-.sidebar-bottom {
-    position: relative !important;
-}
-
-/* 설정 패널: 기존 창 바로 오른쪽에 상세 창 표시 */
-.settings-panel {
-    position: absolute !important;
-    left: 0 !important;
-    bottom: 34px !important;
-
-    display: flex !important;
-    align-items: flex-end !important;
-    gap: 8px !important;
-
-    z-index: 100 !important;
-}
-
-.settings-panel.hidden,
-.settings-sub-menu.hidden {
-    display: none !important;
-}
-
-/* 왼쪽/오른쪽 메뉴 박스 */
-.settings-panel .settings-menu,
-.settings-panel .settings-sub-menu {
-    position: relative !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-
-    width: 150px !important;
-    padding: 8px !important;
-
-    border-radius: 8px !important;
-    background-color: rgba(48, 48, 48, 0.96) !important;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* 4개 항목 공통 UI */
-.settings-row,
-.settings-row-main {
-    width: 100% !important;
-    height: 30px !important;
-    padding: 0 7px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-
-    border: none !important;
-    border-radius: 6px !important;
-    background: transparent !important;
-
-    color: rgba(255, 255, 255, 0.74) !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    text-align: left !important;
-
-    cursor: pointer !important;
-}
-
-/* 클릭 가능한 3개 항목만 hover 적용 */
-.settings-row:not(.settings-row-with-arrow):hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    color: rgba(255, 255, 255, 0.92) !important;
-}
-
-/* 내 정보 줄 전체 */
-.settings-row-with-arrow {
-    width: 100% !important;
-    height: 30px !important;
-    padding: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 4px !important;
-
-    border-radius: 6px !important;
-    background: transparent !important;
-}
-
-/* 내 정보 텍스트 영역: hover 변화 없음 */
-.settings-row-with-arrow:hover,
-.settings-row-main:hover,
-.settings-row-disabled:hover {
-    background: transparent !important;
-    color: rgba(255, 255, 255, 0.74) !important;
-}
-
-/* 내 정보는 클릭 불가 느낌 */
-.settings-row-disabled {
-    cursor: default !important;
-    pointer-events: none !important;
-}
-
-/* 아이콘 공통 */
-.settings-icon {
-    width: 16px !important;
-    min-width: 16px !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    color: rgba(255, 255, 255, 0.55) !important;
-    font-size: 13px !important;
-    opacity: 0.9 !important;
-}
-
-/* > 버튼: 형광 제거, 기존 회색 톤 */
-.settings-arrow-btn,
-.settings-arrow {
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    margin-right: 4px !important;
-    padding: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border: none !important;
-    border-radius: 5px !important;
-
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.72) !important;
-
-    font-size: 16px !important;
-    line-height: 1 !important;
-    font-weight: 400 !important;
-
-    cursor: pointer !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-.settings-arrow-btn:hover,
-.settings-arrow:hover {
-    background-color: rgba(255, 255, 255, 0.16) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* 톱니바퀴 기존 느낌 */
-.settings-btn {
-    width: 28px !important;
-    height: 28px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border: none !important;
-    background: transparent !important;
-    color: rgba(255, 255, 255, 0.75) !important;
-
-    font-size: 18px !important;
-    cursor: pointer !important;
-}
-
-.settings-btn:hover {
-    color: #ffffff !important;
 }
