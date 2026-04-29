@@ -1,44 +1,43 @@
-
-
-
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 class UserManager(BaseUserManager):
+    '''User 커스텀 매니저'''
+
     def create_user(self, email, password=None):
         if not email:
-            raise ValueError("이메일은 필수입니다.")
+            raise ValueError('이메일 형식이 아닙니다.')
+        
         email = self.normalize_email(email)
-        user = self.model(email=email)
+        user = self.model(email=email, username=email)
         user.set_password(password)
         user.save(using=self._db)
         return user
-
-
-
-
-class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True, verbose_name="이메일")
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="가입일")
-
-    USERNAME_FIELD = "email"
+    
     def create_superuser(self, email, password=None):
         user = self.create_user(email, password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
         return user
+
+
+class User(AbstractUser):
+    '''User 모델'''
+    user_id = models.AutoField(primary_key=True, db_column='user_id')
+    email = models.EmailField(unique=True, verbose_name='이메일')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='가입일')
+
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     class Meta:
-
-        verbose_name = "사용자"
-        verbose_name_plural = "사용자 목록"
+        db_table = 'users'
+        verbose_name = '사용자'
+        verbose_name_plural = '사용자'
 
     def __str__(self):
         return self.email
