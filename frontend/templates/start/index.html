@@ -88,10 +88,8 @@
             </div>
 
             <div class="password-field">
-                <!-- 실제 서버로 보낼 비밀번호 값 -->
                 <input type="hidden" id="loginPasswordReal" name="password">
 
-                <!-- 화면에 보이는 비밀번호 입력창 -->
                 <input
                     id="loginPasswordDisplay"
                     type="text"
@@ -105,7 +103,6 @@
                     class="password-toggle"
                     aria-label="비밀번호 보기 전환"
                 >
-                    <!-- 마스킹 상태: 눈에 사선 -->
                     <svg class="eye-icon eye-off active" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M3 3L21 21"></path>
                         <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"></path>
@@ -113,7 +110,6 @@
                         <path d="M6.1 6.1C3.8 7.4 2 9.5 1 12C2.7 15.9 7 19 12 19C13.4 19 14.8 18.8 16 18.3"></path>
                     </svg>
 
-                    <!-- 보임 상태: 눈 뜸 -->
                     <svg class="eye-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M1 12C2.7 8.1 7 5 12 5C17 5 21.3 8.1 23 12C21.3 15.9 17 19 12 19C7 19 2.7 15.9 1 12Z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
@@ -144,22 +140,112 @@
     </div>
 </div>
 
-<!-- 회원가입 모달 -->
+<!-- 회원가입 약관 동의 모달 -->
 <div id="signupModal" class="modal hidden">
-    <div class="modal-box signup-modal-box">
+    <div class="modal-box signup-terms-modal-box">
+        <button type="button" class="modal-close">×</button>
+
+        <h2>회원가입</h2>
+
+        <div class="terms-form">
+            <div class="terms-section">
+                <h3>이용약관</h3>
+
+                <div class="terms-scroll-box">
+                    <p><strong>제 1장 총칙</strong></p>
+                    <p>
+                        제 1조 목적. 이 이용약관은 For everyOne 사이트에서 제공하는 인터넷 서비스 이용과 관련하여
+                        사이트와 사용자의 권리, 의무, 책임사항과 기타 필요한 사항을 규정함을 목적으로 합니다.
+                    </p>
+                    <p><strong>제 2조 용어의 정의</strong></p>
+                    <p>
+                        사용자는 본 사이트에 접속하여 이 약관에 따라 본 사이트가 제공하는 서비스를 받는 회원 및
+                        비회원을 말합니다.
+                    </p>
+                    <p><strong>제 3조 약관의 효력</strong></p>
+                    <p>
+                        본 약관은 서비스 화면에 게시하거나 기타 방법으로 공지함으로써 효력이 발생합니다.
+                    </p>
+                </div>
+
+                <label class="terms-check-row">
+                    <input type="checkbox" id="agreeTerms">
+                    <span></span>
+                    위 이용약관에 동의합니다.
+                </label>
+            </div>
+
+            <div class="terms-section">
+                <h3>개인정보 수집 및 활용</h3>
+
+                <div class="terms-scroll-box">
+                    <p><strong>For everyOne</strong></p>
+                    <p>
+                        이용조건, 절차, 회원규칙, 기타 필요한 사항을 규정함을 목적으로 합니다.
+                    </p>
+                    <p><strong>① 수집항목</strong></p>
+                    <p>
+                        For everyOne은 회원가입 및 기본적인 서비스 제공을 위해 필수정보와 추가적인 서비스 제공을 위해
+                        필요한 선택정보를 구분하여 아래와 같은 개인정보를 수집하고 있습니다.
+                    </p>
+                    <p>- 필수항목: 이메일, 비밀번호</p>
+                    <p>- 선택항목: 해당사항 없음</p>
+                    <p><strong>② 이용목적</strong></p>
+                    <p>
+                        수집된 개인정보는 회원 식별, 서비스 제공, 비밀번호 재설정, 고객 문의 대응을 위해 사용됩니다.
+                    </p>
+                </div>
+
+                <label class="terms-check-row">
+                    <input type="checkbox" id="agreePrivacy">
+                    <span></span>
+                    개인정보 수집 및 활용에 동의합니다.
+                </label>
+            </div>
+
+            <label class="terms-check-row all-check-row">
+                <input type="checkbox" id="agreeAll">
+                <span></span>
+                전체 동의
+            </label>
+
+            <p id="termsError" class="input-error hidden">
+                × 필수 약관에 모두 동의해주세요.
+            </p>
+
+            <button type="button" id="goSignupFormBtn" class="terms-next-btn">
+                다음
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 회원가입 입력 모달 -->
+<div id="signupFormModal" class="modal hidden">
+    <div class="modal-box signup-form-modal-box">
         <button type="button" class="modal-close">×</button>
 
         <h2>회원가입</h2>
 
         <form class="signup-form">
-            <div class="input-group">
-                <input
-                    type="text"
-                    id="signupEmail"
-                    name="signupEmail"
-                    placeholder="이메일을 입력하세요"
-                    autocomplete="email"
-                >
+
+            <!-- 이메일 + 중복 확인 -->
+            <div class="signup-field">
+                <label for="signupEmail">이메일</label>
+
+                <div class="signup-input-button-row">
+                    <input
+                        type="text"
+                        id="signupEmail"
+                        name="signupEmail"
+                        placeholder="이메일 주소를 입력해주세요."
+                        autocomplete="email"
+                    >
+
+                    <button type="button" id="signupEmailCheckBtn" class="inside-btn">
+                        중복 확인
+                    </button>
+                </div>
 
                 <p id="signupEmailFormatError" class="input-error hidden">
                     × 잘못된 이메일 양식입니다.
@@ -168,36 +254,130 @@
                 <p id="signupEmailDuplicateError" class="input-error hidden">
                     × 중복된 이메일 주소입니다.
                 </p>
+
+                <p id="signupEmailAvailableMessage" class="input-success hidden">
+                    <svg class="signup-check-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <path d="M8.5 12.2L10.8 14.5L15.8 9.5"></path>
+                    </svg>
+                    사용 가능한 이메일입니다.
+                </p>
             </div>
 
-            <div class="code-row">
-                <input
-                    type="text"
-                    name="signupCode"
-                    placeholder="인증코드를 입력하세요"
-                    autocomplete="off"
-                >
+            <!-- 비밀번호 -->
+            <div class="signup-field">
+                <label for="signupPassword">비밀번호</label>
 
-                <button type="button" class="secondary-btn">
-                    전송
-                </button>
+                <div class="signup-password-box">
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        name="signupPassword"
+                        placeholder="비밀번호를 입력해주세요."
+                        autocomplete="new-password"
+                    >
+
+                    <button type="button" class="signup-password-toggle" data-target="signupPassword">
+                        <svg class="signup-eye-icon eye-off active" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 3L21 21"></path>
+                            <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"></path>
+                            <path d="M9.4 5.3A9.7 9.7 0 0 1 12 5C17 5 21.3 8.1 23 12C22.4 13.4 21.5 14.7 20.4 15.8"></path>
+                            <path d="M6.1 6.1C3.8 7.4 2 9.5 1 12C2.7 15.9 7 19 12 19C13.4 19 14.8 18.8 16 18.3"></path>
+                        </svg>
+
+                        <svg class="signup-eye-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M1 12C2.7 8.1 7 5 12 5C17 5 21.3 8.1 23 12C21.3 15.9 17 19 12 19C7 19 2.7 15.9 1 12Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+
+                        <svg class="signup-check-icon password-match-check" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M8.5 12.2L10.8 14.5L15.8 9.5"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <p id="signupPasswordRuleMessage" class="password-rule-message">
+                    * 10자~16자 / 영문 대소문자, 숫자 필수 포함 / 공백 미포함
+                </p>
             </div>
 
-            <input
-                type="password"
-                name="signupPassword"
-                placeholder="비밀번호를 입력하세요"
-                autocomplete="new-password"
-            >
+            <!-- 비밀번호 확인 -->
+            <div class="signup-field">
+                <label for="signupPasswordCheck">비밀번호 확인</label>
 
-            <input
-                type="password"
-                name="signupPasswordCheck"
-                placeholder="비밀번호를 다시 입력하세요"
-                autocomplete="new-password"
-            >
+                <div class="signup-password-box">
+                    <input
+                        type="password"
+                        id="signupPasswordCheck"
+                        name="signupPasswordCheck"
+                        placeholder="비밀번호를 다시 입력해주세요."
+                        autocomplete="new-password"
+                    >
 
-            <button type="button" class="primary-btn">
+                    <button type="button" class="signup-password-toggle" data-target="signupPasswordCheck">
+                        <svg class="signup-eye-icon eye-off active" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 3L21 21"></path>
+                            <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"></path>
+                            <path d="M9.4 5.3A9.7 9.7 0 0 1 12 5C17 5 21.3 8.1 23 12C22.4 13.4 21.5 14.7 20.4 15.8"></path>
+                            <path d="M6.1 6.1C3.8 7.4 2 9.5 1 12C2.7 15.9 7 19 12 19C13.4 19 14.8 18.8 16 18.3"></path>
+                        </svg>
+
+                        <svg class="signup-eye-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M1 12C2.7 8.1 7 5 12 5C17 5 21.3 8.1 23 12C21.3 15.9 17 19 12 19C7 19 2.7 15.9 1 12Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+
+                        <svg class="signup-check-icon password-match-check" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M8.5 12.2L10.8 14.5L15.8 9.5"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <p id="signupPasswordMatchError" class="input-error hidden">
+                    × 비밀번호가 일치하지 않습니다.
+                </p>
+            </div>
+
+            <!-- 인증코드 + 전송 -->
+            <div class="signup-field">
+                <label for="signupCode">인증코드</label>
+
+                <div class="signup-input-button-row signup-code-row">
+                    <input
+                        type="text"
+                        id="signupCode"
+                        name="signupCode"
+                        placeholder="인증코드를 입력해주세요."
+                        autocomplete="off"
+                    >
+
+                    <span id="signupCodeTimer" class="signup-code-timer hidden">3:00</span>
+
+                    <button type="button" id="signupCodeSendBtn" class="inside-btn">
+                        전송
+                    </button>
+                </div>
+
+                <p id="signupCodeSendMessage" class="input-success hidden">
+                    <svg class="paper-plane-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M21 3L3 10.5L10.2 13.4L13.1 21L21 3Z"></path>
+                        <path d="M10.2 13.4L21 3"></path>
+                    </svg>
+                    인증코드를 전송하였습니다.
+                </p>
+
+                <p id="signupCodeError" class="input-error hidden">
+                    × 인증코드가 일치하지 않습니다.
+                </p>
+
+                <p id="signupCodeExpiredError" class="input-error hidden">
+                    × 인증코드가 만료되었습니다.
+                </p>
+            </div>
+
+            <button type="button" id="signupSubmitBtn" class="signup-submit-btn">
                 회원가입
             </button>
         </form>
@@ -212,7 +392,6 @@
         <h2>비밀번호 찾기</h2>
 
         <form class="password-find-form">
-            <!-- 이메일 입력 영역 -->
             <div class="password-find-field">
                 <label for="resetEmailInput">이메일</label>
 
@@ -235,15 +414,14 @@
                 </p>
 
                 <p id="resetEmailSuccess" class="input-success hidden">
-    <svg class="paper-plane-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 3L3 10.5L10.2 13.4L13.1 21L21 3Z"></path>
-        <path d="M10.2 13.4L21 3"></path>
-    </svg>
-    인증코드를 전송하였습니다.
-</p>
+                    <svg class="paper-plane-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M21 3L3 10.5L10.2 13.4L13.1 21L21 3Z"></path>
+                        <path d="M10.2 13.4L21 3"></path>
+                    </svg>
+                    인증코드를 전송하였습니다.
+                </p>
             </div>
 
-            <!-- 인증코드 입력 영역 -->
             <div class="password-find-field">
                 <label for="resetCodeInput">인증코드</label>
 
@@ -283,21 +461,83 @@
         <h2>비밀번호 찾기</h2>
 
         <form class="password-reset-form">
-            <input
-                type="password"
-                name="newPassword"
-                placeholder="새 비밀번호"
-                autocomplete="new-password"
-            >
+            <div class="password-reset-field">
+                <label for="newPasswordDisplay">새 비밀번호</label>
 
-            <input
-                type="password"
-                name="newPasswordCheck"
-                placeholder="새 비밀번호 확인"
-                autocomplete="new-password"
-            >
+                <div class="reset-password-field">
+                    <input type="hidden" id="newPasswordReal" name="newPassword">
 
-            <button type="button" class="primary-btn">
+                    <input
+                        id="newPasswordDisplay"
+                        type="text"
+                        placeholder="새 비밀번호를 입력해주세요."
+                        autocomplete="off"
+                    >
+
+                    <button type="button" id="newPasswordToggle" class="reset-password-toggle" aria-label="새 비밀번호 보기 전환">
+                        <svg class="reset-eye-icon reset-eye-off active" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 3L21 21"></path>
+                            <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"></path>
+                            <path d="M9.4 5.3A9.7 9.7 0 0 1 12 5C17 5 21.3 8.1 23 12C22.4 13.4 21.5 14.7 20.4 15.8"></path>
+                            <path d="M6.1 6.1C3.8 7.4 2 9.5 1 12C2.7 15.9 7 19 12 19C13.4 19 14.8 18.8 16 18.3"></path>
+                        </svg>
+
+                        <svg class="reset-eye-icon reset-eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M1 12C2.7 8.1 7 5 12 5C17 5 21.3 8.1 23 12C21.3 15.9 17 19 12 19C7 19 2.7 15.9 1 12Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+
+                        <svg class="reset-check-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M8.5 12.2L10.8 14.5L15.8 9.5"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <p id="newPasswordRuleMessage" class="password-rule-message">
+                    * 10자~16자 / 영문 대소문자, 숫자 필수 포함 / 공백 미포함
+                </p>
+            </div>
+
+            <div class="password-reset-field">
+                <label for="newPasswordCheckDisplay">새 비밀번호 확인</label>
+
+                <div class="reset-password-field">
+                    <input type="hidden" id="newPasswordCheckReal" name="newPasswordCheck">
+
+                    <input
+                        id="newPasswordCheckDisplay"
+                        type="text"
+                        placeholder="새 비밀번호를 다시 입력해주세요."
+                        autocomplete="off"
+                    >
+
+                    <button type="button" id="newPasswordCheckToggle" class="reset-password-toggle" aria-label="새 비밀번호 확인 보기 전환">
+                        <svg class="reset-eye-icon reset-eye-off active" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 3L21 21"></path>
+                            <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"></path>
+                            <path d="M9.4 5.3A9.7 9.7 0 0 1 12 5C17 5 21.3 8.1 23 12C22.4 13.4 21.5 14.7 20.4 15.8"></path>
+                            <path d="M6.1 6.1C3.8 7.4 2 9.5 1 12C2.7 15.9 7 19 12 19C13.4 19 14.8 18.8 16 18.3"></path>
+                        </svg>
+
+                        <svg class="reset-eye-icon reset-eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M1 12C2.7 8.1 7 5 12 5C17 5 21.3 8.1 23 12C21.3 15.9 17 19 12 19C7 19 2.7 15.9 1 12Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+
+                        <svg class="reset-check-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="8"></circle>
+                            <path d="M8.5 12.2L10.8 14.5L15.8 9.5"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <p id="newPasswordMatchError" class="input-error hidden">
+                    × 비밀번호가 일치하지 않습니다.
+                </p>
+            </div>
+
+            <button type="button" id="passwordResetConfirmBtn" class="password-reset-confirm-btn">
                 확인
             </button>
         </form>
