@@ -6,7 +6,7 @@ SECRET_KEY = "django-insecure-chj3_b_8@j09hb!$i#x*0#&fg+vs%jvevvhoi$s44^e)#kglb*
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "front",
+    "chat",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -72,8 +73,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "../frontend/static"]
 
-
-
+# 이메일 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -82,9 +82,13 @@ EMAIL_HOST_USER = '보내는 Gmail 주소'
 EMAIL_HOST_PASSWORD = '이메일 인증 번호'
 DEFAULT_FROM_EMAIL = "noreply@foreveryone.com"
 
-
+# 캐시
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
+
+# 인증
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/chat/'
