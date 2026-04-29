@@ -2,7 +2,8 @@
 
 document.addEventListener("DOMContentLoaded", function () {
     const loginModal = document.getElementById("loginModal");
-    const signupModal = document.getElementById("signupModal");
+    const signupModal = document.getElementById("signupModal"); // 약관 동의 모달
+    const signupFormModal = document.getElementById("signupFormModal"); // 회원가입 입력 모달
     const passwordEmailModal = document.getElementById("passwordEmailModal");
     const passwordResetModal = document.getElementById("passwordResetModal");
 
@@ -29,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeAllModals() {
         closeModal(loginModal);
         closeModal(signupModal);
+        closeModal(signupFormModal);
         closeModal(passwordEmailModal);
         closeModal(passwordResetModal);
 
@@ -83,7 +85,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return emailPattern.test(email);
     }
 
-    // 로그인 이메일/비밀번호 요소
+    // ==============================
+    // 로그인 이메일/비밀번호 검사
+    // ==============================
+
     const loginEmailInput = document.getElementById("loginEmail");
     const loginEmailError = document.getElementById("loginEmailError");
     const loginPasswordError = document.getElementById("loginPasswordError");
@@ -121,7 +126,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loginPasswordError.classList.add("hidden");
     }
 
-    // 로그인 버튼 클릭 시 이메일/비밀번호 검사
     if (loginSubmitBtn && loginEmailInput) {
         loginSubmitBtn.addEventListener("click", function () {
             const email = loginEmailInput.value.trim();
@@ -154,67 +158,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (loginEmailInput) {
         loginEmailInput.addEventListener("input", function () {
             hideLoginEmailError();
-        });
-    }
-
-    // 회원가입 이메일 에러 메시지 처리
-    const signupEmailInput = document.getElementById("signupEmail");
-    const signupEmailFormatError = document.getElementById("signupEmailFormatError");
-    const signupEmailDuplicateError = document.getElementById("signupEmailDuplicateError");
-
-    const duplicateEmails = [
-        "helloworld@gmail.com",
-        "test@gmail.com"
-    ];
-
-    function hideSignupEmailErrors() {
-        if (!signupEmailInput || !signupEmailFormatError || !signupEmailDuplicateError) return;
-
-        signupEmailInput.classList.remove("input-error-active");
-        signupEmailFormatError.classList.add("hidden");
-        signupEmailDuplicateError.classList.add("hidden");
-    }
-
-    function showSignupEmailFormatError() {
-        if (!signupEmailInput || !signupEmailFormatError || !signupEmailDuplicateError) return;
-
-        signupEmailInput.classList.add("input-error-active");
-        signupEmailFormatError.classList.remove("hidden");
-        signupEmailDuplicateError.classList.add("hidden");
-    }
-
-    function showSignupEmailDuplicateError() {
-        if (!signupEmailInput || !signupEmailFormatError || !signupEmailDuplicateError) return;
-
-        signupEmailInput.classList.add("input-error-active");
-        signupEmailFormatError.classList.add("hidden");
-        signupEmailDuplicateError.classList.remove("hidden");
-    }
-
-    if (signupEmailInput) {
-        signupEmailInput.addEventListener("blur", function () {
-            const email = signupEmailInput.value.trim();
-
-            if (email === "") {
-                hideSignupEmailErrors();
-                return;
-            }
-
-            if (!isValidEmail(email)) {
-                showSignupEmailFormatError();
-                return;
-            }
-
-            if (duplicateEmails.includes(email)) {
-                showSignupEmailDuplicateError();
-                return;
-            }
-
-            hideSignupEmailErrors();
-        });
-
-        signupEmailInput.addEventListener("input", function () {
-            hideSignupEmailErrors();
         });
     }
 
@@ -262,7 +205,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             event.preventDefault();
-
             hideLoginPasswordError();
 
             const start = passwordDisplay.selectionStart;
@@ -309,7 +251,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         passwordDisplay.addEventListener("paste", function (event) {
             event.preventDefault();
-
             hideLoginPasswordError();
 
             const pasteText = event.clipboardData.getData("text");
@@ -344,7 +285,452 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // ==============================
+    // 회원가입 약관 동의
+    // ==============================
+
+    const agreeTerms = document.getElementById("agreeTerms");
+    const agreePrivacy = document.getElementById("agreePrivacy");
+    const agreeAll = document.getElementById("agreeAll");
+    const termsError = document.getElementById("termsError");
+    const goSignupFormBtn = document.getElementById("goSignupFormBtn");
+
+    function hideTermsError() {
+        if (termsError) {
+            termsError.classList.add("hidden");
+        }
+    }
+
+    function updateAgreeAllState() {
+        if (!agreeTerms || !agreePrivacy || !agreeAll) return;
+
+        agreeAll.checked = agreeTerms.checked && agreePrivacy.checked;
+    }
+
+    if (agreeAll) {
+        agreeAll.addEventListener("change", function () {
+            if (agreeTerms) {
+                agreeTerms.checked = agreeAll.checked;
+            }
+
+            if (agreePrivacy) {
+                agreePrivacy.checked = agreeAll.checked;
+            }
+
+            hideTermsError();
+        });
+    }
+
+    if (agreeTerms) {
+        agreeTerms.addEventListener("change", function () {
+            updateAgreeAllState();
+            hideTermsError();
+        });
+    }
+
+    if (agreePrivacy) {
+        agreePrivacy.addEventListener("change", function () {
+            updateAgreeAllState();
+            hideTermsError();
+        });
+    }
+
+    if (goSignupFormBtn) {
+        goSignupFormBtn.addEventListener("click", function () {
+            if (!agreeTerms || !agreePrivacy || !signupFormModal) return;
+
+            if (!agreeTerms.checked || !agreePrivacy.checked) {
+                if (termsError) {
+                    termsError.classList.remove("hidden");
+                }
+                return;
+            }
+
+            closeAllModals();
+            openModal(signupFormModal);
+        });
+    }
+
+        // ==============================
+    // 회원가입 입력 폼 처리
+    // ==============================
+
+    const signupEmailInput = document.getElementById("signupEmail");
+    const signupEmailCheckBtn = document.getElementById("signupEmailCheckBtn");
+    const signupEmailFormatError = document.getElementById("signupEmailFormatError");
+    const signupEmailDuplicateError = document.getElementById("signupEmailDuplicateError");
+    const signupEmailAvailableMessage = document.getElementById("signupEmailAvailableMessage");
+
+    const signupPassword = document.getElementById("signupPassword");
+    const signupPasswordCheck = document.getElementById("signupPasswordCheck");
+    const signupPasswordMatchError = document.getElementById("signupPasswordMatchError");
+
+    const signupCodeInput = document.getElementById("signupCode");
+    const signupCodeSendBtn = document.getElementById("signupCodeSendBtn");
+    const signupCodeSendMessage = document.getElementById("signupCodeSendMessage");
+    const signupCodeError = document.getElementById("signupCodeError");
+    const signupCodeExpiredError = document.getElementById("signupCodeExpiredError");
+    const signupCodeTimer = document.getElementById("signupCodeTimer");
+    const signupSubmitBtn = document.getElementById("signupSubmitBtn");
+
+    const testSignupCode = "123456";
+    const duplicateEmails = ["helloworld@gmail.com", "test@gmail.com"];
+
+    let isSignupEmailChecked = false;
+    let signupTimerId = null;
+    let signupRemainSeconds = 0;
+
+    function hideSignupEmailMessages() {
+        if (!signupEmailInput) return;
+
+        signupEmailInput.classList.remove("input-error-active");
+
+        if (signupEmailFormatError) signupEmailFormatError.classList.add("hidden");
+        if (signupEmailDuplicateError) signupEmailDuplicateError.classList.add("hidden");
+        if (signupEmailAvailableMessage) signupEmailAvailableMessage.classList.add("hidden");
+    }
+
+    function showSignupEmailFormatError() {
+        hideSignupEmailMessages();
+
+        if (signupEmailInput) signupEmailInput.classList.add("input-error-active");
+        if (signupEmailFormatError) signupEmailFormatError.classList.remove("hidden");
+    }
+
+    function showSignupEmailDuplicateError() {
+        hideSignupEmailMessages();
+
+        if (signupEmailInput) signupEmailInput.classList.add("input-error-active");
+        if (signupEmailDuplicateError) signupEmailDuplicateError.classList.remove("hidden");
+    }
+
+    function showSignupEmailAvailable() {
+        hideSignupEmailMessages();
+
+        if (signupEmailAvailableMessage) signupEmailAvailableMessage.classList.remove("hidden");
+    }
+
+    function hideSignupCodeMessages() {
+        if (signupCodeInput) signupCodeInput.classList.remove("input-error-active");
+        if (signupCodeError) signupCodeError.classList.add("hidden");
+        if (signupCodeExpiredError) signupCodeExpiredError.classList.add("hidden");
+    }
+
+    function showSignupCodeError() {
+        if (!signupCodeInput || !signupCodeError) return;
+
+        signupCodeInput.classList.add("input-error-active");
+
+        if (signupCodeSendMessage) signupCodeSendMessage.classList.add("hidden");
+        if (signupCodeExpiredError) signupCodeExpiredError.classList.add("hidden");
+
+        signupCodeError.classList.remove("hidden");
+    }
+
+    function showSignupCodeExpiredError() {
+        if (!signupCodeInput || !signupCodeExpiredError) return;
+
+        signupCodeInput.classList.add("input-error-active");
+
+        if (signupCodeSendMessage) signupCodeSendMessage.classList.add("hidden");
+        if (signupCodeError) signupCodeError.classList.add("hidden");
+
+        signupCodeExpiredError.classList.remove("hidden");
+    }
+
+    function updateSignupCodeTimerText() {
+        if (!signupCodeTimer) return;
+
+        const minutes = Math.floor(signupRemainSeconds / 60);
+        const seconds = signupRemainSeconds % 60;
+
+        signupCodeTimer.textContent = `${minutes}:${String(seconds).padStart(2, "0")}`;
+
+        if (signupRemainSeconds <= 0) {
+            signupCodeTimer.classList.add("expired");
+        } else {
+            signupCodeTimer.classList.remove("expired");
+        }
+    }
+
+    function startSignupCodeTimer() {
+        if (!signupCodeTimer) return;
+
+        clearInterval(signupTimerId);
+
+        signupRemainSeconds = 180;
+        signupCodeTimer.classList.remove("hidden");
+        updateSignupCodeTimerText();
+
+        signupTimerId = setInterval(function () {
+            signupRemainSeconds -= 1;
+            updateSignupCodeTimerText();
+
+            if (signupRemainSeconds <= 0) {
+                clearInterval(signupTimerId);
+                signupRemainSeconds = 0;
+                updateSignupCodeTimerText();
+            }
+        }, 1000);
+    }
+
+    function isValidSignupPassword(password) {
+        const hasLength = password.length >= 10 && password.length <= 16;
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasNoSpace = !/\s/.test(password);
+
+        return hasLength && hasUpper && hasLower && hasNumber && hasNoSpace;
+    }
+
+    function resetSignupPasswordIcons() {
+        const passwordToggle = signupPassword
+            ? signupPassword.parentElement.querySelector(".signup-password-toggle")
+            : null;
+
+        const passwordCheckToggle = signupPasswordCheck
+            ? signupPasswordCheck.parentElement.querySelector(".signup-password-toggle")
+            : null;
+
+        [passwordToggle, passwordCheckToggle].forEach(function (button) {
+            if (!button) return;
+
+            const checkIcon = button.querySelector(".password-match-check");
+            const eyeOff = button.querySelector(".eye-off");
+            const eyeOpen = button.querySelector(".eye-open");
+
+            if (checkIcon) checkIcon.classList.remove("active");
+
+            const targetId = button.getAttribute("data-target");
+            const input = document.getElementById(targetId);
+
+            if (input && input.type === "text") {
+                if (eyeOff) eyeOff.classList.remove("active");
+                if (eyeOpen) eyeOpen.classList.add("active");
+            } else {
+                if (eyeOpen) eyeOpen.classList.remove("active");
+                if (eyeOff) eyeOff.classList.add("active");
+            }
+        });
+    }
+
+    function showBothPasswordCheckIcons() {
+        const passwordToggle = signupPassword
+            ? signupPassword.parentElement.querySelector(".signup-password-toggle")
+            : null;
+
+        const passwordCheckToggle = signupPasswordCheck
+            ? signupPasswordCheck.parentElement.querySelector(".signup-password-toggle")
+            : null;
+
+        [passwordToggle, passwordCheckToggle].forEach(function (button) {
+            if (!button) return;
+
+            const eyeOff = button.querySelector(".eye-off");
+            const eyeOpen = button.querySelector(".eye-open");
+            const checkIcon = button.querySelector(".password-match-check");
+
+            if (eyeOff) eyeOff.classList.remove("active");
+            if (eyeOpen) eyeOpen.classList.remove("active");
+            if (checkIcon) checkIcon.classList.add("active");
+        });
+    }
+
+    function validateSignupPasswordMatch() {
+        if (!signupPassword || !signupPasswordCheck || !signupPasswordMatchError) return;
+
+        const password = signupPassword.value;
+        const checkPassword = signupPasswordCheck.value;
+
+        signupPassword.parentElement.classList.remove("error");
+        signupPasswordCheck.parentElement.classList.remove("error");
+        signupPasswordMatchError.classList.add("hidden");
+
+        resetSignupPasswordIcons();
+
+        if (checkPassword === "") return;
+
+        if (password !== checkPassword) {
+            signupPassword.parentElement.classList.add("error");
+            signupPasswordCheck.parentElement.classList.add("error");
+            signupPasswordMatchError.classList.remove("hidden");
+            return;
+        }
+
+        if (password === checkPassword && isValidSignupPassword(password)) {
+            showBothPasswordCheckIcons();
+        }
+    }
+
+    function showSignupCompleteToast() {
+        let toast = document.getElementById("signupCompleteToast");
+
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "signupCompleteToast";
+            toast.className = "signup-complete-toast";
+            toast.textContent = "회원가입이 완료되었습니다.";
+            document.body.appendChild(toast);
+        }
+
+        toast.classList.add("show");
+
+        setTimeout(function () {
+            toast.classList.remove("show");
+        }, 1300);
+    }
+
+    if (signupEmailCheckBtn && signupEmailInput) {
+        signupEmailCheckBtn.addEventListener("click", function () {
+            const email = signupEmailInput.value.trim();
+
+            isSignupEmailChecked = false;
+
+            if (!isValidEmail(email)) {
+                showSignupEmailFormatError();
+                return;
+            }
+
+            if (duplicateEmails.includes(email)) {
+                showSignupEmailDuplicateError();
+                return;
+            }
+
+            isSignupEmailChecked = true;
+            showSignupEmailAvailable();
+        });
+    }
+
+    if (signupEmailInput) {
+        signupEmailInput.addEventListener("input", function () {
+            isSignupEmailChecked = false;
+            hideSignupEmailMessages();
+        });
+    }
+
+    if (signupPassword) {
+        signupPassword.addEventListener("input", validateSignupPasswordMatch);
+    }
+
+    if (signupPasswordCheck) {
+        signupPasswordCheck.addEventListener("input", validateSignupPasswordMatch);
+    }
+
+    document.querySelectorAll(".signup-password-toggle").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const checkIcon = button.querySelector(".password-match-check");
+
+            if (checkIcon && checkIcon.classList.contains("active")) {
+                return;
+            }
+
+            const targetId = button.getAttribute("data-target");
+            const input = document.getElementById(targetId);
+
+            if (!input) return;
+
+            const eyeOff = button.querySelector(".eye-off");
+            const eyeOpen = button.querySelector(".eye-open");
+
+            if (input.type === "password") {
+                input.type = "text";
+                if (eyeOff) eyeOff.classList.remove("active");
+                if (eyeOpen) eyeOpen.classList.add("active");
+            } else {
+                input.type = "password";
+                if (eyeOpen) eyeOpen.classList.remove("active");
+                if (eyeOff) eyeOff.classList.add("active");
+            }
+        });
+    });
+
+    if (signupCodeSendBtn) {
+        signupCodeSendBtn.addEventListener("click", function () {
+            hideSignupCodeMessages();
+
+            if (signupCodeSendMessage) {
+                signupCodeSendMessage.classList.remove("hidden");
+            }
+
+            signupCodeSendBtn.textContent = "재전송";
+            startSignupCodeTimer();
+        });
+    }
+
+    if (signupCodeInput) {
+        signupCodeInput.addEventListener("input", function () {
+            hideSignupCodeMessages();
+        });
+    }
+
+    if (signupSubmitBtn) {
+        signupSubmitBtn.addEventListener("click", function () {
+            const email = signupEmailInput ? signupEmailInput.value.trim() : "";
+            const password = signupPassword ? signupPassword.value.trim() : "";
+            const passwordCheck = signupPasswordCheck ? signupPasswordCheck.value.trim() : "";
+            const code = signupCodeInput ? signupCodeInput.value.trim() : "";
+
+            if (!isValidEmail(email)) {
+                showSignupEmailFormatError();
+                return;
+            }
+
+            if (!isSignupEmailChecked) {
+                showSignupEmailDuplicateError();
+                return;
+            }
+
+            if (!isValidSignupPassword(password)) {
+                if (signupPassword) {
+                    signupPassword.parentElement.classList.add("error");
+                }
+                return;
+            }
+
+            if (password !== passwordCheck) {
+                if (signupPassword) signupPassword.parentElement.classList.add("error");
+                if (signupPasswordCheck) signupPasswordCheck.parentElement.classList.add("error");
+                if (signupPasswordMatchError) signupPasswordMatchError.classList.remove("hidden");
+                return;
+            }
+
+            if (signupRemainSeconds <= 0) {
+                showSignupCodeExpiredError();
+                return;
+            }
+
+            if (code !== testSignupCode) {
+                showSignupCodeError();
+                return;
+            }
+
+            hideSignupCodeMessages();
+            showSignupCompleteToast();
+
+            if (signupEmailInput) signupEmailInput.value = "";
+            if (signupPassword) signupPassword.value = "";
+            if (signupPasswordCheck) signupPasswordCheck.value = "";
+            if (signupCodeInput) signupCodeInput.value = "";
+
+            isSignupEmailChecked = false;
+            signupRemainSeconds = 0;
+
+            if (signupCodeTimer) {
+                signupCodeTimer.classList.add("hidden");
+            }
+
+            setTimeout(function () {
+                closeAllModals();
+                openModal(loginModal);
+            }, 900);
+        });
+    }
+
+    // ==============================
     // 비밀번호 찾기 - 이메일 인증 처리
+    // ==============================
+
     const resetEmailInput = document.getElementById("resetEmailInput");
     const resetEmailSendBtn = document.getElementById("resetEmailSendBtn");
     const resetEmailError = document.getElementById("resetEmailError");
@@ -356,8 +742,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const resetCodeExpiredError = document.getElementById("resetCodeExpiredError");
     const resetConfirmBtn = document.getElementById("resetConfirmBtn");
 
-    // 화면 테스트용 인증코드
-    // 나중에 백엔드 인증코드 응답과 비교하면 됨
     const testResetCode = "7adF12F";
 
     let resetTimerId = null;
@@ -459,9 +843,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             showResetEmailSuccess();
-
             resetEmailSendBtn.textContent = "재전송";
-
             startResetCodeTimer();
 
             console.log("비밀번호 찾기 인증코드 발송:", email);
@@ -498,6 +880,366 @@ document.addEventListener("DOMContentLoaded", function () {
 
             closeAllModals();
             openModal(passwordResetModal);
+        });
+    }
+
+    // ==============================
+    // 새 비밀번호 설정
+    // ==============================
+
+    const newPasswordDisplay = document.getElementById("newPasswordDisplay");
+    const newPasswordReal = document.getElementById("newPasswordReal");
+    const newPasswordToggle = document.getElementById("newPasswordToggle");
+
+    const newPasswordCheckDisplay = document.getElementById("newPasswordCheckDisplay");
+    const newPasswordCheckReal = document.getElementById("newPasswordCheckReal");
+    const newPasswordCheckToggle = document.getElementById("newPasswordCheckToggle");
+
+    const newPasswordMatchError = document.getElementById("newPasswordMatchError");
+    const passwordResetConfirmBtn = document.getElementById("passwordResetConfirmBtn");
+
+    let newPasswordValue = "";
+    let newPasswordCheckValue = "";
+    let isNewPasswordVisible = false;
+    let isNewPasswordCheckVisible = false;
+
+    function isValidNewPassword(password) {
+        const hasLength = password.length >= 10 && password.length <= 16;
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasNoSpace = !/\s/.test(password);
+
+        return hasLength && hasUpper && hasLower && hasNumber && hasNoSpace;
+    }
+
+    function updateResetPasswordIcons() {
+        const isMatched =
+            newPasswordValue !== "" &&
+            newPasswordCheckValue !== "" &&
+            newPasswordValue === newPasswordCheckValue &&
+            isValidNewPassword(newPasswordValue);
+
+        const newPasswordEyeOff = newPasswordToggle ? newPasswordToggle.querySelector(".reset-eye-off") : null;
+        const newPasswordEyeOpen = newPasswordToggle ? newPasswordToggle.querySelector(".reset-eye-open") : null;
+        const newPasswordCheckIcon = newPasswordToggle ? newPasswordToggle.querySelector(".reset-check-icon") : null;
+
+        const checkEyeOff = newPasswordCheckToggle ? newPasswordCheckToggle.querySelector(".reset-eye-off") : null;
+        const checkEyeOpen = newPasswordCheckToggle ? newPasswordCheckToggle.querySelector(".reset-eye-open") : null;
+        const checkIcon = newPasswordCheckToggle ? newPasswordCheckToggle.querySelector(".reset-check-icon") : null;
+
+        if (isMatched) {
+            if (newPasswordEyeOff) newPasswordEyeOff.classList.remove("active");
+            if (newPasswordEyeOpen) newPasswordEyeOpen.classList.remove("active");
+            if (newPasswordCheckIcon) newPasswordCheckIcon.classList.add("active");
+
+            if (checkEyeOff) checkEyeOff.classList.remove("active");
+            if (checkEyeOpen) checkEyeOpen.classList.remove("active");
+            if (checkIcon) checkIcon.classList.add("active");
+
+            return;
+        }
+
+        if (newPasswordCheckIcon) newPasswordCheckIcon.classList.remove("active");
+        if (checkIcon) checkIcon.classList.remove("active");
+
+        if (newPasswordEyeOff && newPasswordEyeOpen) {
+            if (isNewPasswordVisible) {
+                newPasswordEyeOff.classList.remove("active");
+                newPasswordEyeOpen.classList.add("active");
+            } else {
+                newPasswordEyeOpen.classList.remove("active");
+                newPasswordEyeOff.classList.add("active");
+            }
+        }
+
+        if (checkEyeOff && checkEyeOpen) {
+            if (isNewPasswordCheckVisible) {
+                checkEyeOff.classList.remove("active");
+                checkEyeOpen.classList.add("active");
+            } else {
+                checkEyeOpen.classList.remove("active");
+                checkEyeOff.classList.add("active");
+            }
+        }
+    }
+
+    function updateResetPasswordView(target, cursorPosition) {
+        const isFirst = target === "new";
+        const display = isFirst ? newPasswordDisplay : newPasswordCheckDisplay;
+        const real = isFirst ? newPasswordReal : newPasswordCheckReal;
+        const value = isFirst ? newPasswordValue : newPasswordCheckValue;
+        const visible = isFirst ? isNewPasswordVisible : isNewPasswordCheckVisible;
+
+        if (!display || !real) return;
+
+        if (visible) {
+            display.value = value;
+        } else {
+            display.value = "*".repeat(value.length);
+        }
+
+        real.value = value;
+
+        requestAnimationFrame(function () {
+            display.setSelectionRange(cursorPosition, cursorPosition);
+        });
+
+        updateResetPasswordIcons();
+    }
+
+    function handlePasswordTyping(event, target) {
+        const isFirst = target === "new";
+        const display = isFirst ? newPasswordDisplay : newPasswordCheckDisplay;
+
+        if (!display) return;
+
+        const allowedKeys = [
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown",
+            "Tab",
+            "Home",
+            "End",
+            "Enter"
+        ];
+
+        if (allowedKeys.includes(event.key)) {
+            return;
+        }
+
+        if (event.ctrlKey || event.metaKey) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (newPasswordMatchError) {
+            newPasswordMatchError.classList.add("hidden");
+        }
+
+        if (newPasswordDisplay) {
+            newPasswordDisplay.parentElement.classList.remove("error");
+        }
+
+        if (newPasswordCheckDisplay) {
+            newPasswordCheckDisplay.parentElement.classList.remove("error");
+        }
+
+        const start = display.selectionStart;
+        const end = display.selectionEnd;
+
+        let value = isFirst ? newPasswordValue : newPasswordCheckValue;
+        let nextCursor = start;
+
+        if (event.key === "Backspace") {
+            if (start === end && start > 0) {
+                value = value.slice(0, start - 1) + value.slice(end);
+                nextCursor = start - 1;
+            } else {
+                value = value.slice(0, start) + value.slice(end);
+                nextCursor = start;
+            }
+        } else if (event.key === "Delete") {
+            if (start === end) {
+                value = value.slice(0, start) + value.slice(start + 1);
+            } else {
+                value = value.slice(0, start) + value.slice(end);
+            }
+
+            nextCursor = start;
+        } else if (event.key.length === 1) {
+            value = value.slice(0, start) + event.key + value.slice(end);
+            nextCursor = start + 1;
+        }
+
+        if (isFirst) {
+            newPasswordValue = value;
+        } else {
+            newPasswordCheckValue = value;
+        }
+
+        updateResetPasswordView(target, nextCursor);
+    }
+
+    function handlePasswordPaste(event, target) {
+        event.preventDefault();
+
+        const isFirst = target === "new";
+        const display = isFirst ? newPasswordDisplay : newPasswordCheckDisplay;
+
+        if (!display) return;
+
+        const pasteText = event.clipboardData.getData("text");
+        const start = display.selectionStart;
+        const end = display.selectionEnd;
+
+        let value = isFirst ? newPasswordValue : newPasswordCheckValue;
+
+        value = value.slice(0, start) + pasteText + value.slice(end);
+
+        if (isFirst) {
+            newPasswordValue = value;
+        } else {
+            newPasswordCheckValue = value;
+        }
+
+        updateResetPasswordView(target, start + pasteText.length);
+    }
+
+    if (newPasswordDisplay) {
+        newPasswordDisplay.addEventListener("keydown", function (event) {
+            handlePasswordTyping(event, "new");
+        });
+
+        newPasswordDisplay.addEventListener("paste", function (event) {
+            handlePasswordPaste(event, "new");
+        });
+    }
+
+    if (newPasswordCheckDisplay) {
+        newPasswordCheckDisplay.addEventListener("keydown", function (event) {
+            handlePasswordTyping(event, "check");
+        });
+
+        newPasswordCheckDisplay.addEventListener("paste", function (event) {
+            handlePasswordPaste(event, "check");
+        });
+    }
+
+    if (newPasswordToggle) {
+        newPasswordToggle.addEventListener("click", function () {
+            if (
+                newPasswordValue !== "" &&
+                newPasswordCheckValue !== "" &&
+                newPasswordValue === newPasswordCheckValue &&
+                isValidNewPassword(newPasswordValue)
+            ) {
+                return;
+            }
+
+            isNewPasswordVisible = !isNewPasswordVisible;
+            updateResetPasswordView("new", newPasswordValue.length);
+        });
+    }
+
+    if (newPasswordCheckToggle) {
+        newPasswordCheckToggle.addEventListener("click", function () {
+            if (
+                newPasswordValue !== "" &&
+                newPasswordCheckValue !== "" &&
+                newPasswordValue === newPasswordCheckValue &&
+                isValidNewPassword(newPasswordValue)
+            ) {
+                return;
+            }
+
+            isNewPasswordCheckVisible = !isNewPasswordCheckVisible;
+            updateResetPasswordView("check", newPasswordCheckValue.length);
+        });
+    }
+
+    // 비밀번호 변경 완료 팝업
+    function showPasswordChangeToast() {
+        let toast = document.getElementById("passwordChangeToast");
+
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "passwordChangeToast";
+            toast.className = "password-change-toast";
+            toast.textContent = "비밀번호가 변경되었습니다.";
+            document.body.appendChild(toast);
+        }
+
+        toast.classList.add("show");
+
+        setTimeout(function () {
+            toast.classList.remove("show");
+        }, 1300);
+    }
+
+    if (passwordResetConfirmBtn) {
+        passwordResetConfirmBtn.addEventListener("click", function () {
+            const isRuleValid = isValidNewPassword(newPasswordValue);
+            const isMatched =
+                newPasswordValue === newPasswordCheckValue &&
+                newPasswordCheckValue !== "";
+
+            if (!isRuleValid) {
+                if (newPasswordDisplay) {
+                    newPasswordDisplay.parentElement.classList.add("error");
+                }
+
+                if (newPasswordCheckDisplay) {
+                    newPasswordCheckDisplay.parentElement.classList.remove("error");
+                }
+
+                if (newPasswordMatchError) {
+                    newPasswordMatchError.classList.add("hidden");
+                }
+
+                updateResetPasswordIcons();
+                return;
+            }
+
+            if (!isMatched) {
+                if (newPasswordDisplay) {
+                    newPasswordDisplay.parentElement.classList.add("error");
+                }
+
+                if (newPasswordCheckDisplay) {
+                    newPasswordCheckDisplay.parentElement.classList.add("error");
+                }
+
+                if (newPasswordMatchError) {
+                    newPasswordMatchError.classList.remove("hidden");
+                }
+
+                updateResetPasswordIcons();
+                return;
+            }
+
+            if (newPasswordDisplay) {
+                newPasswordDisplay.parentElement.classList.remove("error");
+            }
+
+            if (newPasswordCheckDisplay) {
+                newPasswordCheckDisplay.parentElement.classList.remove("error");
+            }
+
+            if (newPasswordMatchError) {
+                newPasswordMatchError.classList.add("hidden");
+            }
+
+            updateResetPasswordIcons();
+            showPasswordChangeToast();
+
+            newPasswordValue = "";
+            newPasswordCheckValue = "";
+            isNewPasswordVisible = false;
+            isNewPasswordCheckVisible = false;
+
+            if (newPasswordDisplay) {
+                newPasswordDisplay.value = "";
+            }
+
+            if (newPasswordReal) {
+                newPasswordReal.value = "";
+            }
+
+            if (newPasswordCheckDisplay) {
+                newPasswordCheckDisplay.value = "";
+            }
+
+            if (newPasswordCheckReal) {
+                newPasswordCheckReal.value = "";
+            }
+
+            setTimeout(function () {
+                closeAllModals();
+                openModal(loginModal);
+            }, 900);
         });
     }
 });
