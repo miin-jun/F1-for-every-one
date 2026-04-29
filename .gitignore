@@ -1,0 +1,12 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Django local database
+db.sqlite3
+*.sqlite3
+*.sqlite3.backup
+
+# Local backup
+local_backup/
