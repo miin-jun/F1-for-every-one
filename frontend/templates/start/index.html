@@ -1,0 +1,25 @@
+{% comment %} 시작 페이지, 로그인 , 호이ㅝㄴ가입, 비밀번호 찾기 모달 등 {% endcomment %}
+
+<!-- 데모용-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>로그인</title>
+</head>
+<body>
+    <h1>로그인</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="POST">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="이메일" required>
+        <input type="password" name="password" placeholder="비밀번호" required>
+        <button type="submit">로그인</button>
+    </form>
+</body>
+</html>
