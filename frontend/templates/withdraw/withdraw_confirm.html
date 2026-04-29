@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}회원 탈퇴 확인{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/withdraw.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="withdraw-confirm-page">
+    <main class="withdraw-confirm-card">
+        {% include "withdraw/components/withdraw_confirm_content.html" %}
+    </main>
+</div>
+{% endblock %}

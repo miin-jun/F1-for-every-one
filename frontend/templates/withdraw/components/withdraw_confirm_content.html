@@ -1,0 +1,28 @@
+<section class="withdraw-confirm-header">
+    <p class="withdraw-confirm-email">
+        {% if request.user.is_authenticated %}
+            {{ request.user.email|default:request.user.username }} 님
+        {% else %}
+            Admin 님
+        {% endif %}
+    </p>
+
+    {% include "withdraw/components/withdraw_profile_icon.html" with icon_class="withdraw-confirm-profile-icon" %}
+</section>
+
+<section class="withdraw-confirm-content">
+    <p>
+        탈퇴시 계정정보와 모든 대화 기록이 영구 삭제되며, 복구할 수 없습니다.<br>
+        정말 탈퇴하시겠습니까?
+    </p>
+
+    <div class="withdraw-confirm-actions">
+        <a href="{% url 'front:chat_main' %}" class="withdraw-cancel-btn">
+            아니오
+        </a>
+
+        <a href="{% url 'front:withdraw_done' %}" class="withdraw-confirm-btn">
+            네
+        </a>
+    </div>
+</section>

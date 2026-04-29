@@ -1,0 +1,28 @@
+<section class="chat-input-area">
+    <div class="chat-input-box">
+        <input
+            type="text"
+            id="chatInput"
+            maxlength="300"
+            placeholder="질문을 입력해 주세요."
+            autocomplete="off"
+        >
+
+        <div class="chat-input-actions">
+            <span id="textCount">0/300</span>
+
+            <button type="button" class="mic-btn" id="micBtn" aria-label="음성 입력">
+                {% include "chat/components/icons/mic_icon.html" %}
+            </button>
+
+            <button type="button" class="send-btn" id="sendMessageBtn" aria-label="전송">
+                {% include "chat/components/icons/send_icon.html" %}
+            </button>
+        </div>
+    </div>
+
+    <p class="chat-notice">
+        For everyOne에게 메시지를 보냄으로써, 당사 이용약관에 동의하고 개인정보 보호 정책을 읽은 것으로 간주합니다.<br>
+        For everyOne은 실수할 수 있습니다. 응답을 다시 한 번 확인해 주세요.
+    </p>
+</section>

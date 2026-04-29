@@ -1,32 +1,69 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const chatSidebar = document.getElementById("chatSidebar");
-    const sidebarToggle = document.getElementById("sidebarToggle");
-    const newChatBtn = document.getElementById("newChatBtn");
+    /* ==============================
+       요소 선택
+    ============================== */
 
-    const historyList = document.getElementById("historyList");
-    const historyMoreBtn = document.getElementById("historyMoreBtn");
-    const historyDeleteBtn = document.getElementById("historyDeleteBtn");
+    const $ = (id) => document.getElementById(id);
 
-    const recommendSection = document.getElementById("recommendSection");
-    const recommendList = document.getElementById("recommendList");
+    const chatSidebar = $("chatSidebar");
+    const sidebarToggle = $("sidebarToggle");
+    const newChatBtn = $("newChatBtn");
 
-    const chatInput = document.getElementById("chatInput");
-    const sendMessageBtn = document.getElementById("sendMessageBtn");
-    const chatMessageArea = document.getElementById("chatMessageArea");
-    const chatScrollArea = document.getElementById("chatScrollArea");
-    const chatIntro = document.getElementById("chatIntro");
-    const textCount = document.getElementById("textCount");
+    const historyList = $("historyList");
+    const historyMoreBtn = $("historyMoreBtn");
+    const historyDeleteBtn = $("historyDeleteBtn");
 
-    const settingsBtn = document.getElementById("settingsBtn");
-    const settingsPanel = document.getElementById("settingsPanel");
-    const settingsMenu = document.getElementById("settingsMenu");
-    const myInfoMenu = document.getElementById("myInfoMenu");
-    const openMyInfoBtn = document.getElementById("openMyInfoBtn");
-    const backSettingsBtn = document.getElementById("backSettingsBtn");
+    const recommendSection = $("recommendSection");
+    const recommendList = $("recommendList");
 
-    const logoutLink = document.getElementById("logoutLink");
-    const passwordChangeLink = document.getElementById("passwordChangeLink");
-    const withdrawLink = document.getElementById("withdrawLink");
+    const chatInput = $("chatInput");
+    const sendMessageBtn = $("sendMessageBtn");
+    const micBtn = $("micBtn");
+
+    const chatMessageArea = $("chatMessageArea");
+    const chatScrollArea = $("chatScrollArea");
+    const chatIntro = $("chatIntro");
+    const textCount = $("textCount");
+
+    const voiceRecordModal = $("voiceRecordModal");
+    const voiceRecordTimer = $("voiceRecordTimer");
+
+    const currentChatTitle = $("currentChatTitle");
+    const chatTitleBar = currentChatTitle ? currentChatTitle.closest(".chat-title-bar") : null;
+
+    const settingsBtn = $("settingsBtn");
+    const settingsPanel = $("settingsPanel");
+    const settingsMenu = $("settingsMenu");
+    const myInfoMenu = $("myInfoMenu");
+    const openMyInfoBtn = $("openMyInfoBtn");
+    const backSettingsBtn = $("backSettingsBtn");
+
+    const logoutLink = $("logoutLink");
+    const passwordChangeLink = $("passwordChangeLink");
+    const withdrawLink = $("withdrawLink");
+
+    const passwordChangeModal = $("passwordChangeModal");
+    const passwordChangeCloseBtn = $("passwordChangeCloseBtn");
+    const passwordChangeSubmitBtn = $("passwordChangeSubmitBtn");
+
+    const currentPasswordInput = $("currentPasswordInput");
+    const currentPasswordCheckBtn = $("currentPasswordCheckBtn");
+    const currentPasswordRow = $("currentPasswordRow");
+    const currentPasswordError = $("currentPasswordError");
+    const currentPasswordSuccessIcon = $("currentPasswordSuccessIcon");
+
+    const changeNewPasswordInput = $("changeNewPasswordInput");
+    const changeNewPasswordCheckInput = $("changeNewPasswordCheckInput");
+    const changeNewPasswordToggle = $("changeNewPasswordToggle");
+    const changeNewPasswordCheckToggle = $("changeNewPasswordCheckToggle");
+    const changeNewPasswordRow = $("changeNewPasswordRow");
+    const changeNewPasswordCheckRow = $("changeNewPasswordCheckRow");
+    const changePasswordRuleMessage = $("changePasswordRuleMessage");
+    const changePasswordMatchError = $("changePasswordMatchError");
+
+    /* ==============================
+       기본 데이터 / 상태
+    ============================== */
 
     const recommendQuestions = [
         "2026년에 달라진 규정이 뭔가요?",
@@ -42,10 +79,28 @@ document.addEventListener("DOMContentLoaded", function () {
         "파워유닛 교체 페널티는 어떻게 적용돼?"
     ];
 
+    const temporaryCurrentPassword = "test1234!";
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     let chatStore = {};
     let chatOrder = [];
     let activeChatId = null;
     let chatSeq = 0;
+
+    let isCurrentPasswordVerified = false;
+    let isNewPasswordVisible = false;
+    let isNewPasswordCheckVisible = false;
+
+    let recognition = null;
+    let isVoiceListening = false;
+    let voiceBaseText = "";
+    let originalInputPlaceholder = "";
+    let voiceTimerId = null;
+    let voiceElapsedSeconds = 0;
+
+    /* ==============================
+       공통 유틸
+    ============================== */
 
     function makeChatId() {
         chatSeq += 1;
@@ -54,46 +109,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function makeShortTitle(text) {
         if (!text) return "새 채팅";
-        return text.length > 22 ? text.slice(0, 22) + "..." : text;
-    }
 
-    function shuffleArray(array) {
-        return [...array].sort(function () {
-            return Math.random() - 0.5;
-        });
-    }
-
-    function showRecommendSection() {
-        if (!recommendSection) return;
-        recommendSection.classList.remove("hidden");
-    }
-
-    function hideRecommendSection() {
-        if (!recommendSection) return;
-        recommendSection.classList.add("hidden");
-    }
-
-    function updateTextCount() {
-        if (!chatInput || !textCount) return;
-        textCount.textContent = `${chatInput.value.length}/300`;
-    }
-
-    function clearChatScreen() {
-        if (chatIntro) {
-            chatIntro.classList.remove("hidden");
-        }
-
-        if (chatMessageArea) {
-            chatMessageArea.innerHTML = "";
-        }
-
-        if (chatInput) {
-            chatInput.value = "";
-        }
-
-        showRecommendSection();
-        renderRandomRecommendations();
-        updateTextCount();
+        const trimmedText = text.trim();
+        return trimmedText.length > 24 ? `${trimmedText.slice(0, 24)}...` : trimmedText;
     }
 
     function getCurrentTime() {
@@ -104,17 +122,121 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${hours}:${minutes}`;
     }
 
+    function shuffleArray(array) {
+        return [...array].sort(function () {
+            return Math.random() - 0.5;
+        });
+    }
+
+    function moveToPage(button, fallbackUrl) {
+        if (!button) return;
+
+        const url = button.dataset.url || fallbackUrl;
+
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    function showToast(id, className, message, duration = 1300) {
+        let toast = document.getElementById(id);
+
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = id;
+            toast.className = className;
+            document.body.appendChild(toast);
+        }
+
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        setTimeout(function () {
+            toast.classList.remove("show");
+        }, duration);
+    }
+
+    /* ==============================
+       채팅 제목 / 추천 질문
+    ============================== */
+
+    function showCurrentChatTitle(title) {
+        if (!currentChatTitle || !chatTitleBar) return;
+
+        currentChatTitle.textContent = title || "새 채팅";
+        chatTitleBar.classList.remove("hidden");
+    }
+
+    function hideCurrentChatTitle() {
+        if (!currentChatTitle || !chatTitleBar) return;
+
+        currentChatTitle.textContent = "";
+        chatTitleBar.classList.add("hidden");
+    }
+
+    function showRecommendSection() {
+        if (recommendSection) {
+            recommendSection.classList.remove("hidden");
+        }
+    }
+
+    function hideRecommendSection() {
+        if (recommendSection) {
+            recommendSection.classList.add("hidden");
+        }
+    }
+
+    function renderRandomRecommendations() {
+        if (!recommendList) return;
+
+        const selectedQuestions = shuffleArray(recommendQuestions).slice(0, 3);
+
+        recommendList.innerHTML = "";
+
+        selectedQuestions.forEach(function (question) {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.textContent = question;
+
+            button.addEventListener("click", function () {
+                createChatFromQuestion(question);
+            });
+
+            recommendList.appendChild(button);
+        });
+    }
+
+    function updateTextCount() {
+        if (!chatInput || !textCount) return;
+
+        textCount.textContent = `${chatInput.value.length}/300`;
+    }
+
+    /* ==============================
+       채팅 메시지
+    ============================== */
+
+    function scrollToBottom() {
+        const scrollTarget = chatScrollArea || chatMessageArea;
+
+        if (!scrollTarget) return;
+
+        scrollTarget.scrollTop = scrollTarget.scrollHeight;
+    }
+
     function addMessageElement(type, text) {
         if (!chatMessageArea) return;
 
         const message = document.createElement("div");
+        const textSpan = document.createElement("span");
+        const timeSpan = document.createElement("span");
+
         message.className = `chat-message ${type}`;
 
-        const textSpan = document.createElement("span");
         textSpan.className = "chat-message-text";
         textSpan.textContent = text;
 
-        const timeSpan = document.createElement("span");
         timeSpan.className = "chat-message-time";
         timeSpan.textContent = getCurrentTime();
 
@@ -122,9 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
         message.appendChild(timeSpan);
 
         chatMessageArea.appendChild(message);
-
-        const scrollTarget = chatScrollArea || chatMessageArea;
-        scrollTarget.scrollTop = scrollTarget.scrollHeight;
+        scrollToBottom();
     }
 
     function renderMessages(chatId) {
@@ -139,6 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 chatIntro.classList.remove("hidden");
             }
 
+            hideCurrentChatTitle();
             showRecommendSection();
             return;
         }
@@ -147,92 +268,39 @@ document.addEventListener("DOMContentLoaded", function () {
             chatIntro.classList.add("hidden");
         }
 
+        showCurrentChatTitle(chat.title);
         hideRecommendSection();
 
         chat.messages.forEach(function (message) {
             addMessageElement(message.type, message.text);
         });
+
+        scrollToBottom();
     }
 
-    function renderHistory() {
-        if (!historyList) return;
+    function clearChatScreen() {
+        activeChatId = null;
 
-        const isDeleteMode = historyList.classList.contains("delete-mode");
-
-        historyList.innerHTML = "";
-
-        if (chatOrder.length === 0) {
-            const emptyItem = document.createElement("li");
-            const emptyButton = document.createElement("button");
-
-            emptyButton.type = "button";
-            emptyButton.className = "history-title";
-            emptyButton.textContent = "대화 기록이 없습니다.";
-            emptyButton.disabled = true;
-
-            emptyItem.appendChild(emptyButton);
-            historyList.appendChild(emptyItem);
-
-            return;
+        if (chatIntro) {
+            chatIntro.classList.remove("hidden");
         }
 
-        chatOrder.forEach(function (chatId) {
-            const chat = chatStore[chatId];
-
-            if (!chat) return;
-
-            const li = document.createElement("li");
-            li.dataset.chatId = chatId;
-
-            const titleButton = document.createElement("button");
-            titleButton.type = "button";
-            titleButton.className = "history-title";
-            titleButton.textContent = chat.title;
-
-            if (chatId === activeChatId) {
-                titleButton.classList.add("active");
-            }
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.className = "history-check";
-
-            titleButton.addEventListener("click", function () {
-                if (historyList.classList.contains("delete-mode")) {
-                    checkbox.checked = !checkbox.checked;
-                    return;
-                }
-
-                openChat(chatId);
-            });
-
-            li.appendChild(titleButton);
-            li.appendChild(checkbox);
-            historyList.appendChild(li);
-        });
-
-        if (isDeleteMode) {
-            historyList.classList.add("delete-mode");
+        if (chatMessageArea) {
+            chatMessageArea.innerHTML = "";
         }
-    }
-
-    function openChat(chatId) {
-        if (!chatStore[chatId]) return;
-
-        activeChatId = chatId;
-        renderHistory();
-        renderMessages(chatId);
 
         if (chatInput) {
             chatInput.value = "";
         }
 
+        hideCurrentChatTitle();
+        showRecommendSection();
+        renderRandomRecommendations();
         updateTextCount();
+        renderHistory();
     }
 
     function createNewChat() {
-        activeChatId = null;
-
         clearChatScreen();
 
         if (historyList) {
@@ -250,9 +318,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function createChatFromQuestion(question) {
         const chatId = makeChatId();
+        const title = makeShortTitle(question);
 
         chatStore[chatId] = {
-            title: makeShortTitle(question),
+            title,
             messages: [
                 {
                     type: "user",
@@ -264,6 +333,7 @@ document.addEventListener("DOMContentLoaded", function () {
         chatOrder.unshift(chatId);
         activeChatId = chatId;
 
+        showCurrentChatTitle(title);
         renderHistory();
         renderMessages(chatId);
 
@@ -292,9 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const message = chatInput.value.trim();
 
-        if (message === "") {
-            return;
-        }
+        if (!message) return;
 
         let chatId = activeChatId;
 
@@ -319,6 +387,8 @@ document.addEventListener("DOMContentLoaded", function () {
             chatStore[chatId].title = makeShortTitle(message);
         }
 
+        showCurrentChatTitle(chatStore[chatId].title);
+
         chatInput.value = "";
         updateTextCount();
 
@@ -339,6 +409,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 350);
     }
 
+    /* ==============================
+       히스토리
+    ============================== */
+
     function seedInitialHistory() {
         if (!historyList) return;
 
@@ -356,7 +430,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const chatId = makeChatId();
 
             chatStore[chatId] = {
-                title: title,
+                title,
                 messages: [
                     {
                         type: "user",
@@ -375,115 +449,288 @@ document.addEventListener("DOMContentLoaded", function () {
         renderHistory();
     }
 
-    function renderRandomRecommendations() {
-        if (!recommendList) return;
+    function renderEmptyHistory() {
+        if (!historyList) return;
 
-        const selectedQuestions = shuffleArray(recommendQuestions).slice(0, 3);
+        const emptyItem = document.createElement("li");
+        const emptyButton = document.createElement("button");
 
-        recommendList.innerHTML = "";
+        emptyButton.type = "button";
+        emptyButton.className = "history-title";
+        emptyButton.textContent = "대화 기록이 없습니다.";
+        emptyButton.disabled = true;
 
-        selectedQuestions.forEach(function (question) {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.textContent = question;
+        emptyItem.appendChild(emptyButton);
+        historyList.appendChild(emptyItem);
+    }
 
-            button.addEventListener("click", function () {
-                createChatFromQuestion(question);
-            });
+    function renderHistoryItem(chatId) {
+        const chat = chatStore[chatId];
 
-            recommendList.appendChild(button);
+        if (!chat || !historyList) return;
+
+        const li = document.createElement("li");
+        const titleButton = document.createElement("button");
+        const checkbox = document.createElement("input");
+
+        li.dataset.chatId = chatId;
+
+        titleButton.type = "button";
+        titleButton.className = "history-title";
+        titleButton.textContent = chat.title;
+
+        if (chatId === activeChatId) {
+            titleButton.classList.add("active");
+        }
+
+        checkbox.type = "checkbox";
+        checkbox.className = "history-check";
+
+        titleButton.addEventListener("click", function () {
+            if (historyList.classList.contains("delete-mode")) {
+                checkbox.checked = !checkbox.checked;
+                return;
+            }
+
+            openChat(chatId);
         });
+
+        li.appendChild(titleButton);
+        li.appendChild(checkbox);
+        historyList.appendChild(li);
     }
 
-    function moveToPage(button, fallbackUrl) {
-        if (!button) return;
+    function renderHistory() {
+        if (!historyList) return;
 
-        const url = button.dataset.url || fallbackUrl;
+        const isDeleteMode = historyList.classList.contains("delete-mode");
 
-        if (!url) return;
+        historyList.innerHTML = "";
 
-        window.location.href = url;
-    }
-
-    function openPasswordChangeModal() {
-        const passwordChangeModal = document.getElementById("passwordChangeModal");
-
-        if (passwordChangeModal) {
-            passwordChangeModal.classList.remove("hidden");
+        if (chatOrder.length === 0) {
+            renderEmptyHistory();
             return;
         }
 
-        if (passwordChangeLink && passwordChangeLink.dataset.url) {
-            window.location.href = passwordChangeLink.dataset.url;
+        chatOrder.forEach(renderHistoryItem);
+
+        if (isDeleteMode) {
+            historyList.classList.add("delete-mode");
         }
     }
 
-    if (sidebarToggle && chatSidebar) {
-        sidebarToggle.addEventListener("click", function () {
-            chatSidebar.classList.toggle("collapsed");
-        });
+    function openChat(chatId) {
+        if (!chatStore[chatId]) return;
+
+        activeChatId = chatId;
+
+        renderHistory();
+        renderMessages(chatId);
+
+        if (chatInput) {
+            chatInput.value = "";
+        }
+
+        showCurrentChatTitle(chatStore[chatId].title);
+        updateTextCount();
     }
 
-    if (newChatBtn) {
-        newChatBtn.addEventListener("click", function () {
-            createNewChat();
-        });
+    function toggleHistoryDeleteMode() {
+        if (!historyList || !historyDeleteBtn) return;
+
+        const isDeleteMode = historyList.classList.toggle("delete-mode");
+
+        historyDeleteBtn.classList.toggle("hidden", !isDeleteMode);
     }
 
-    if (historyMoreBtn && historyDeleteBtn && historyList) {
-        historyMoreBtn.addEventListener("click", function () {
-            historyList.classList.toggle("delete-mode");
-            historyDeleteBtn.classList.toggle("hidden");
-        });
-    }
+    function deleteCheckedHistoryItems() {
+        if (!historyList || !historyDeleteBtn) return;
 
-    if (historyDeleteBtn && historyList) {
-        historyDeleteBtn.addEventListener("click", function () {
-            const checkedItems = historyList.querySelectorAll(".history-check:checked");
-            const deletedChatIds = [];
+        const checkedItems = historyList.querySelectorAll(".history-check:checked");
+        const deletedChatIds = [];
 
-            checkedItems.forEach(function (checkbox) {
-                const item = checkbox.closest("li");
+        checkedItems.forEach(function (checkbox) {
+            const item = checkbox.closest("li");
 
-                if (!item) return;
+            if (!item) return;
 
-                const chatId = item.dataset.chatId;
+            const chatId = item.dataset.chatId;
 
-                if (chatId) {
-                    deletedChatIds.push(chatId);
-                    delete chatStore[chatId];
-                }
-            });
-
-            chatOrder = chatOrder.filter(function (chatId) {
-                return !deletedChatIds.includes(chatId);
-            });
-
-            if (deletedChatIds.includes(activeChatId)) {
-                activeChatId = null;
-                clearChatScreen();
-            }
-
-            historyList.classList.remove("delete-mode");
-            historyDeleteBtn.classList.add("hidden");
-
-            renderHistory();
-        });
-    }
-
-    if (chatInput) {
-        chatInput.addEventListener("input", updateTextCount);
-
-        chatInput.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                sendCurrentMessage();
+            if (chatId) {
+                deletedChatIds.push(chatId);
+                delete chatStore[chatId];
             }
         });
+
+        chatOrder = chatOrder.filter(function (chatId) {
+            return !deletedChatIds.includes(chatId);
+        });
+
+        if (deletedChatIds.includes(activeChatId)) {
+            clearChatScreen();
+        }
+
+        historyList.classList.remove("delete-mode");
+        historyDeleteBtn.classList.add("hidden");
+
+        renderHistory();
     }
 
-    if (sendMessageBtn) {
-        sendMessageBtn.addEventListener("click", sendCurrentMessage);
+    /* ==============================
+       음성 입력
+    ============================== */
+
+    function showVoiceToast(message) {
+        showToast("voiceToast", "voice-toast", message);
     }
+
+    function updateVoiceRecordTimer() {
+        if (!voiceRecordTimer) return;
+
+        voiceRecordTimer.textContent = `${voiceElapsedSeconds}s`;
+    }
+
+    function showVoiceRecordModal() {
+        if (!voiceRecordModal) return;
+
+        clearInterval(voiceTimerId);
+
+        voiceElapsedSeconds = 0;
+        updateVoiceRecordTimer();
+
+        voiceRecordModal.classList.remove("hidden");
+
+        voiceTimerId = setInterval(function () {
+            voiceElapsedSeconds += 1;
+            updateVoiceRecordTimer();
+        }, 1000);
+    }
+
+    function hideVoiceRecordModal() {
+        if (!voiceRecordModal) return;
+
+        voiceRecordModal.classList.add("hidden");
+
+        clearInterval(voiceTimerId);
+        voiceTimerId = null;
+
+        voiceElapsedSeconds = 0;
+        updateVoiceRecordTimer();
+    }
+
+    function setMicListeningState(isListening) {
+        isVoiceListening = isListening;
+
+        if (!micBtn || !chatInput) return;
+
+        if (isListening) {
+            originalInputPlaceholder = chatInput.placeholder;
+            chatInput.placeholder = "음성을 듣는 중입니다...";
+
+            micBtn.classList.add("listening");
+            micBtn.setAttribute("aria-label", "음성 입력 중지");
+
+            showVoiceRecordModal();
+            return;
+        }
+
+        chatInput.placeholder = originalInputPlaceholder || "질문을 입력해 주세요.";
+
+        micBtn.classList.remove("listening");
+        micBtn.setAttribute("aria-label", "음성 입력");
+
+        hideVoiceRecordModal();
+    }
+
+    function initSpeechRecognition() {
+        if (!SpeechRecognition) return null;
+
+        const speechRecognition = new SpeechRecognition();
+
+        speechRecognition.lang = "ko-KR";
+        speechRecognition.continuous = false;
+        speechRecognition.interimResults = true;
+        speechRecognition.maxAlternatives = 1;
+
+        speechRecognition.onstart = function () {
+            setMicListeningState(true);
+        };
+
+        speechRecognition.onresult = function (event) {
+            let transcript = "";
+
+            for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                transcript += event.results[i][0].transcript;
+            }
+
+            const nextText = voiceBaseText
+                ? `${voiceBaseText} ${transcript}`.trim()
+                : transcript.trim();
+
+            if (chatInput) {
+                chatInput.value = nextText.slice(0, 300);
+                updateTextCount();
+            }
+        };
+
+        speechRecognition.onerror = function (event) {
+            setMicListeningState(false);
+
+            if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+                showVoiceToast("마이크 권한을 허용해주세요.");
+                return;
+            }
+
+            if (event.error === "no-speech") {
+                showVoiceToast("음성이 감지되지 않았습니다.");
+                return;
+            }
+
+            showVoiceToast("음성 입력을 다시 시도해주세요.");
+        };
+
+        speechRecognition.onend = function () {
+            setMicListeningState(false);
+        };
+
+        return speechRecognition;
+    }
+
+    function toggleVoiceInput() {
+        if (!chatInput) return;
+
+        if (!SpeechRecognition) {
+            showVoiceToast("이 브라우저는 음성 입력을 지원하지 않습니다.");
+            return;
+        }
+
+        if (!recognition) {
+            recognition = initSpeechRecognition();
+        }
+
+        if (!recognition) {
+            showVoiceToast("음성 입력을 사용할 수 없습니다.");
+            return;
+        }
+
+        if (isVoiceListening) {
+            recognition.stop();
+            setMicListeningState(false);
+            return;
+        }
+
+        voiceBaseText = chatInput.value.trim();
+
+        try {
+            recognition.start();
+        } catch (error) {
+            showVoiceToast("음성 입력을 다시 시도해주세요.");
+        }
+    }
+
+    /* ==============================
+       설정 메뉴
+    ============================== */
 
     function openSettingsMenu() {
         if (settingsPanel) {
@@ -539,11 +786,364 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    /* ==============================
+       비밀번호 변경
+    ============================== */
+
+    function validatePasswordRule(password) {
+        const hasLength = password.length >= 10 && password.length <= 16;
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasNoSpace = !/\s/.test(password);
+
+        return hasLength && hasUpper && hasLower && hasNumber && hasNoSpace;
+    }
+
+    function resetPasswordIcons(toggleButton, isVisible) {
+        if (!toggleButton) return;
+
+        const eyeOff = toggleButton.querySelector(".eye-off");
+        const eyeOpen = toggleButton.querySelector(".eye-open");
+        const checkIcon = toggleButton.querySelector(".password-match-check");
+
+        if (checkIcon) {
+            checkIcon.classList.remove("active");
+        }
+
+        if (isVisible) {
+            if (eyeOff) eyeOff.classList.remove("active");
+            if (eyeOpen) eyeOpen.classList.add("active");
+            return;
+        }
+
+        if (eyeOpen) eyeOpen.classList.remove("active");
+        if (eyeOff) eyeOff.classList.add("active");
+    }
+
+    function showPasswordCheckIcons() {
+        [changeNewPasswordToggle, changeNewPasswordCheckToggle].forEach(function (toggleButton) {
+            if (!toggleButton) return;
+
+            const eyeOff = toggleButton.querySelector(".eye-off");
+            const eyeOpen = toggleButton.querySelector(".eye-open");
+            const checkIcon = toggleButton.querySelector(".password-match-check");
+
+            if (eyeOff) eyeOff.classList.remove("active");
+            if (eyeOpen) eyeOpen.classList.remove("active");
+            if (checkIcon) checkIcon.classList.add("active");
+        });
+    }
+
+    function updatePasswordChangeState() {
+        const newPassword = changeNewPasswordInput ? changeNewPasswordInput.value.trim() : "";
+        const newPasswordCheck = changeNewPasswordCheckInput ? changeNewPasswordCheckInput.value.trim() : "";
+
+        const isRuleValid = validatePasswordRule(newPassword);
+        const isMatched =
+            newPassword !== "" &&
+            newPasswordCheck !== "" &&
+            newPassword === newPasswordCheck &&
+            isRuleValid;
+
+        if (changeNewPasswordRow) {
+            changeNewPasswordRow.classList.remove("error");
+        }
+
+        if (changeNewPasswordCheckRow) {
+            changeNewPasswordCheckRow.classList.remove("error");
+        }
+
+        if (changePasswordMatchError) {
+            changePasswordMatchError.classList.add("hidden");
+        }
+
+        if (newPassword !== "" && !isRuleValid) {
+            if (changeNewPasswordRow) {
+                changeNewPasswordRow.classList.add("error");
+            }
+
+            if (changePasswordRuleMessage) {
+                changePasswordRuleMessage.classList.remove("hidden");
+            }
+        }
+
+        if (newPasswordCheck !== "" && newPassword !== newPasswordCheck) {
+            if (changeNewPasswordCheckRow) {
+                changeNewPasswordCheckRow.classList.add("error");
+            }
+
+            if (changePasswordMatchError) {
+                changePasswordMatchError.classList.remove("hidden");
+            }
+        }
+
+        if (isMatched) {
+            showPasswordCheckIcons();
+            return;
+        }
+
+        resetPasswordIcons(changeNewPasswordToggle, isNewPasswordVisible);
+        resetPasswordIcons(changeNewPasswordCheckToggle, isNewPasswordCheckVisible);
+    }
+
+    function resetCurrentPasswordCheckState() {
+        isCurrentPasswordVerified = false;
+
+        if (currentPasswordRow) {
+            currentPasswordRow.classList.remove("success", "error");
+        }
+
+        if (currentPasswordError) {
+            currentPasswordError.classList.add("hidden");
+        }
+
+        if (currentPasswordCheckBtn) {
+            currentPasswordCheckBtn.classList.remove("hidden");
+        }
+
+        if (currentPasswordSuccessIcon) {
+            currentPasswordSuccessIcon.classList.add("hidden");
+            currentPasswordSuccessIcon.classList.remove("active");
+        }
+    }
+
+    function verifyCurrentPassword() {
+        const currentPassword = currentPasswordInput ? currentPasswordInput.value.trim() : "";
+
+        if (currentPassword === temporaryCurrentPassword) {
+            isCurrentPasswordVerified = true;
+
+            if (currentPasswordRow) {
+                currentPasswordRow.classList.remove("error");
+                currentPasswordRow.classList.add("success");
+            }
+
+            if (currentPasswordError) {
+                currentPasswordError.classList.add("hidden");
+            }
+
+            if (currentPasswordCheckBtn) {
+                currentPasswordCheckBtn.classList.add("hidden");
+            }
+
+            if (currentPasswordSuccessIcon) {
+                currentPasswordSuccessIcon.classList.remove("hidden");
+                currentPasswordSuccessIcon.classList.add("active");
+            }
+
+            return;
+        }
+
+        isCurrentPasswordVerified = false;
+
+        if (currentPasswordRow) {
+            currentPasswordRow.classList.remove("success");
+            currentPasswordRow.classList.add("error");
+        }
+
+        if (currentPasswordError) {
+            currentPasswordError.textContent = "× 비밀번호가 일치하지 않습니다.";
+            currentPasswordError.classList.remove("hidden");
+        }
+
+        if (currentPasswordCheckBtn) {
+            currentPasswordCheckBtn.classList.remove("hidden");
+        }
+
+        if (currentPasswordSuccessIcon) {
+            currentPasswordSuccessIcon.classList.add("hidden");
+            currentPasswordSuccessIcon.classList.remove("active");
+        }
+    }
+
+    function resetPasswordChangeModal() {
+        isCurrentPasswordVerified = false;
+        isNewPasswordVisible = false;
+        isNewPasswordCheckVisible = false;
+
+        if (currentPasswordInput) {
+            currentPasswordInput.value = "";
+            currentPasswordInput.type = "password";
+        }
+
+        if (changeNewPasswordInput) {
+            changeNewPasswordInput.value = "";
+            changeNewPasswordInput.type = "password";
+        }
+
+        if (changeNewPasswordCheckInput) {
+            changeNewPasswordCheckInput.value = "";
+            changeNewPasswordCheckInput.type = "password";
+        }
+
+        resetCurrentPasswordCheckState();
+        resetPasswordIcons(changeNewPasswordToggle, false);
+        resetPasswordIcons(changeNewPasswordCheckToggle, false);
+
+        if (changeNewPasswordRow) {
+            changeNewPasswordRow.classList.remove("error");
+        }
+
+        if (changeNewPasswordCheckRow) {
+            changeNewPasswordCheckRow.classList.remove("error");
+        }
+
+        if (changePasswordMatchError) {
+            changePasswordMatchError.classList.add("hidden");
+        }
+
+        if (changePasswordRuleMessage) {
+            changePasswordRuleMessage.classList.remove("hidden");
+        }
+    }
+
+    function openPasswordChangeModal() {
+        if (!passwordChangeModal) return;
+
+        resetPasswordChangeModal();
+        passwordChangeModal.classList.remove("hidden");
+        closeSettingsMenu();
+
+        setTimeout(function () {
+            if (currentPasswordInput) {
+                currentPasswordInput.focus();
+            }
+        }, 0);
+    }
+
+    function closePasswordChangeModal() {
+        if (!passwordChangeModal) return;
+
+        passwordChangeModal.classList.add("hidden");
+        resetPasswordChangeModal();
+    }
+
+    function showPasswordChangeCompleteToast() {
+        showToast(
+            "passwordChangeCompleteToast",
+            "password-change-complete-toast",
+            "비밀번호가 변경되었습니다."
+        );
+    }
+
+    function togglePasswordVisibility(input, toggleButton, visibleStateName) {
+        if (!input || !toggleButton) return;
+
+        const checkIcon = toggleButton.querySelector(".password-match-check");
+
+        if (checkIcon && checkIcon.classList.contains("active")) {
+            return;
+        }
+
+        if (visibleStateName === "new") {
+            isNewPasswordVisible = !isNewPasswordVisible;
+            input.type = isNewPasswordVisible ? "text" : "password";
+            resetPasswordIcons(toggleButton, isNewPasswordVisible);
+            return;
+        }
+
+        isNewPasswordCheckVisible = !isNewPasswordCheckVisible;
+        input.type = isNewPasswordCheckVisible ? "text" : "password";
+        resetPasswordIcons(toggleButton, isNewPasswordCheckVisible);
+    }
+
+    function submitPasswordChange() {
+        const newPassword = changeNewPasswordInput ? changeNewPasswordInput.value.trim() : "";
+        const newPasswordCheck = changeNewPasswordCheckInput ? changeNewPasswordCheckInput.value.trim() : "";
+
+        if (!isCurrentPasswordVerified) {
+            verifyCurrentPassword();
+            return;
+        }
+
+        if (!validatePasswordRule(newPassword)) {
+            if (changeNewPasswordRow) {
+                changeNewPasswordRow.classList.add("error");
+            }
+
+            if (changePasswordRuleMessage) {
+                changePasswordRuleMessage.classList.remove("hidden");
+            }
+
+            updatePasswordChangeState();
+            return;
+        }
+
+        if (newPassword !== newPasswordCheck) {
+            if (changeNewPasswordCheckRow) {
+                changeNewPasswordCheckRow.classList.add("error");
+            }
+
+            if (changePasswordMatchError) {
+                changePasswordMatchError.classList.remove("hidden");
+            }
+
+            updatePasswordChangeState();
+            return;
+        }
+
+        showPasswordChangeCompleteToast();
+        closePasswordChangeModal();
+
+        sessionStorage.setItem("openLoginModalAfterPasswordChange", "true");
+
+        setTimeout(function () {
+            const logoutUrl = logoutLink && logoutLink.dataset.url
+                ? logoutLink.dataset.url
+                : "/logout/";
+
+            window.location.href = logoutUrl;
+        }, 900);
+    }
+
+    /* ==============================
+       이벤트 연결
+    ============================== */
+
+    if (sidebarToggle && chatSidebar) {
+        sidebarToggle.addEventListener("click", function () {
+            chatSidebar.classList.toggle("collapsed");
+        });
+    }
+
+    if (newChatBtn) {
+        newChatBtn.addEventListener("click", createNewChat);
+    }
+
+    if (historyMoreBtn) {
+        historyMoreBtn.addEventListener("click", toggleHistoryDeleteMode);
+    }
+
+    if (historyDeleteBtn) {
+        historyDeleteBtn.addEventListener("click", deleteCheckedHistoryItems);
+    }
+
+    if (chatInput) {
+        chatInput.addEventListener("input", updateTextCount);
+
+        chatInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                sendCurrentMessage();
+            }
+        });
+    }
+
+    if (sendMessageBtn) {
+        sendMessageBtn.addEventListener("click", sendCurrentMessage);
+    }
+
+    if (micBtn) {
+        micBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            toggleVoiceInput();
+        });
+    }
+
     if (settingsBtn) {
         settingsBtn.addEventListener("click", function (event) {
             event.preventDefault();
             event.stopPropagation();
-
             toggleSettingsMenu();
         });
     }
@@ -568,23 +1168,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (settingsPanel) {
-        settingsPanel.addEventListener("click", function (event) {
-            event.stopPropagation();
-        });
-    }
+    [settingsPanel, settingsMenu, myInfoMenu].forEach(function (menu) {
+        if (!menu) return;
 
-    if (settingsMenu) {
-        settingsMenu.addEventListener("click", function (event) {
+        menu.addEventListener("click", function (event) {
             event.stopPropagation();
         });
-    }
-
-    if (myInfoMenu) {
-        myInfoMenu.addEventListener("click", function (event) {
-            event.stopPropagation();
-        });
-    }
+    });
 
     if (logoutLink) {
         logoutLink.addEventListener("click", function (event) {
@@ -596,6 +1186,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (passwordChangeLink) {
         passwordChangeLink.addEventListener("click", function (event) {
             event.preventDefault();
+            event.stopPropagation();
             openPasswordChangeModal();
         });
     }
@@ -606,6 +1197,67 @@ document.addEventListener("DOMContentLoaded", function () {
             moveToPage(withdrawLink, "/withdraw/");
         });
     }
+
+    if (currentPasswordCheckBtn) {
+        currentPasswordCheckBtn.addEventListener("click", verifyCurrentPassword);
+    }
+
+    if (currentPasswordInput) {
+        currentPasswordInput.addEventListener("input", resetCurrentPasswordCheckState);
+
+        currentPasswordInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                verifyCurrentPassword();
+            }
+        });
+    }
+
+    if (changeNewPasswordInput) {
+        changeNewPasswordInput.addEventListener("input", updatePasswordChangeState);
+    }
+
+    if (changeNewPasswordCheckInput) {
+        changeNewPasswordCheckInput.addEventListener("input", updatePasswordChangeState);
+    }
+
+    if (changeNewPasswordToggle) {
+        changeNewPasswordToggle.addEventListener("click", function () {
+            togglePasswordVisibility(changeNewPasswordInput, changeNewPasswordToggle, "new");
+        });
+    }
+
+    if (changeNewPasswordCheckToggle) {
+        changeNewPasswordCheckToggle.addEventListener("click", function () {
+            togglePasswordVisibility(changeNewPasswordCheckInput, changeNewPasswordCheckToggle, "check");
+        });
+    }
+
+    if (passwordChangeCloseBtn) {
+        passwordChangeCloseBtn.addEventListener("click", closePasswordChangeModal);
+    }
+
+    if (passwordChangeModal) {
+        passwordChangeModal.addEventListener("click", function (event) {
+            if (event.target === passwordChangeModal) {
+                closePasswordChangeModal();
+            }
+        });
+    }
+
+    if (passwordChangeSubmitBtn) {
+        passwordChangeSubmitBtn.addEventListener("click", submitPasswordChange);
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key !== "Escape") return;
+
+        closePasswordChangeModal();
+
+        if (isVoiceListening && recognition) {
+            recognition.stop();
+        }
+    });
 
     document.addEventListener("click", function (event) {
         const isSettingsArea =
@@ -620,6 +1272,10 @@ document.addEventListener("DOMContentLoaded", function () {
             closeSettingsMenu();
         }
     });
+
+    /* ==============================
+       초기 실행
+    ============================== */
 
     seedInitialHistory();
     clearChatScreen();

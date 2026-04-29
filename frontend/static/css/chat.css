@@ -2,27 +2,23 @@
    채팅 페이지 전용 스타일
 ============================== */
 
-* {
-    box-sizing: border-box;
+body {
+    overflow: hidden;
 }
 
-body {
-    margin: 0;
-    overflow: hidden;
-    background-color: #000;
-}
+/* ==============================
+   채팅 페이지 레이아웃
+============================== */
 
 .chat-page {
     width: 100%;
     height: 100vh;
+
     display: flex;
     overflow: hidden;
-    color: #ffffff;
 
-    background:
-        radial-gradient(circle at 63% 72%, rgba(255, 31, 22, 0.58), transparent 28%),
-        radial-gradient(circle at 36% 77%, rgba(255, 255, 255, 0.34), transparent 27%),
-        #000000;
+    color: #ffffff;
+    background: transparent;
 }
 
 /* ==============================
@@ -64,8 +60,8 @@ body {
 .sidebar-logo {
     width: 28px;
     height: 28px;
-    object-fit: contain;
 
+    object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
 }
@@ -82,8 +78,8 @@ body {
     padding: 0;
 
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
     border: none;
     background: transparent;
@@ -147,12 +143,18 @@ body {
 }
 
 .history-header {
+    width: 100%;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
 }
 
 .history-header h2 {
+    flex: 1;
+    order: 0;
+
     margin: 0;
 
     color: #ffffff;
@@ -160,9 +162,12 @@ body {
     font-weight: 500;
 }
 
-.history-delete-btn,
-.history-more-btn {
-    width: 20px;
+.history-more-btn,
+.history-delete-btn {
+    position: static;
+    transform: none !important;
+
+    width: 24px;
     height: 28px;
     padding: 0;
 
@@ -174,13 +179,18 @@ body {
     background: transparent;
     color: #ffffff;
 
-    font-size: 18px;
     line-height: 1;
     cursor: pointer;
 }
 
 .history-delete-btn {
-    transform: translateX(35px);
+    order: 1;
+    margin-right: 6px;
+}
+
+.history-more-btn {
+    order: 2;
+    font-size: 20px;
 }
 
 .history-delete-btn svg {
@@ -194,8 +204,9 @@ body {
     stroke-linejoin: round;
 }
 
-.history-more-btn {
-    font-size: 20px;
+.history-more-btn:hover,
+.history-delete-btn:hover {
+    opacity: 0.8;
 }
 
 .history-list {
@@ -216,10 +227,10 @@ body {
 
 .history-title {
     max-width: 165px;
+    padding: 0;
 
     border: none;
     background: transparent;
-    padding: 0;
 
     color: rgba(255, 255, 255, 0.48);
 
@@ -286,9 +297,9 @@ body {
 .chat-sidebar.collapsed .new-chat-btn {
     width: 100%;
     margin-top: 34px;
+    padding: 8px 0;
 
     justify-content: center;
-    padding: 8px 0;
 }
 
 .chat-sidebar.collapsed .new-chat-text {
@@ -459,8 +470,6 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    opacity: 1;
 }
 
 .settings-icon svg {
@@ -520,6 +529,44 @@ body {
 }
 
 /* ==============================
+   현재 채팅 제목
+============================== */
+
+.chat-title-bar {
+    position: absolute;
+    top: 28px;
+    left: 10px;
+    right: 42px;
+
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    z-index: 40;
+    pointer-events: none;
+}
+
+.chat-title-bar h2 {
+    max-width: 520px;
+    margin: 0;
+    padding: 6px 16px;
+
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 20px;
+    font-weight: 600;
+
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ==============================
    메인 채팅 영역
 ============================== */
 
@@ -531,7 +578,6 @@ body {
     height: 103vh;
 
     padding: 0;
-
     overflow: hidden;
 }
 
@@ -558,19 +604,16 @@ body {
 
 /* ==============================
    채팅 메시지 영역
-   - 스크롤은 여기에서만 발생
-   - 오른쪽 끝은 입력창과 맞춤
 ============================== */
 
 .chat-scroll-area {
     position: absolute;
-
     top: 80px;
     left: 0;
     right: 0;
     bottom: 155px;
 
-    padding: 0 42px 32px 42px;
+    padding: 0 42px 32px;
 
     overflow-y: auto;
     overflow-x: hidden;
@@ -581,7 +624,6 @@ body {
     min-height: 100%;
 
     padding: 0;
-
     overflow: visible;
 }
 
@@ -595,11 +637,10 @@ body {
     padding: 14px 18px;
 
     border-radius: 7px;
-
     color: #ffffff;
+
     font-size: 14px;
     line-height: 1.6;
-
     white-space: pre-wrap;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -624,10 +665,9 @@ body {
 }
 
 .chat-message.bot {
+    max-width: 660px;
     margin-left: 0;
     margin-right: auto;
-
-    max-width: 660px;
 
     background: linear-gradient(
         135deg,
@@ -659,7 +699,6 @@ body {
 
 .recommend-section {
     position: absolute;
-
     left: 42px;
     right: 42px;
     bottom: 165px;
@@ -687,7 +726,6 @@ body {
 
     border: none;
     border-radius: 7px;
-
     background-color: rgba(255, 255, 255, 0.68);
     color: rgba(0, 0, 0, 0.58);
 
@@ -705,12 +743,10 @@ body {
 
 /* ==============================
    입력창
-   - 오른쪽 끝을 메시지 영역과 맞춤
 ============================== */
 
 .chat-input-area {
     position: absolute;
-
     left: 42px;
     right: 42px;
     bottom: 34px;
@@ -731,7 +767,6 @@ body {
 
     border-radius: 8px;
     background-color: #ffffff;
-
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
 }
 
@@ -767,15 +802,14 @@ body {
     padding: 0;
 
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
-    background: transparent;
     border: none;
-
+    background: transparent;
     color: #111111;
-    font-size: 17px;
 
+    font-size: 17px;
     cursor: pointer;
 }
 
@@ -813,11 +847,387 @@ body {
 }
 
 /* ==============================
-   공통
+   비밀번호 변경 모달
 ============================== */
 
-.hidden {
-    display: none !important;
+.chat-modal {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+}
+
+.chat-modal.hidden {
+    display: none;
+}
+
+.chat-modal-box {
+    position: relative;
+
+    width: 460px;
+    padding: 42px 44px 46px;
+
+    border-radius: 40px;
+    background-color: rgba(43, 43, 43, 0.96);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+
+    color: #ffffff;
+}
+
+.chat-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.chat-modal-close:hover {
+    color: #ffffff;
+}
+
+.password-change-modal-box h2 {
+    margin: 0 0 34px;
+
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.password-change-form,
+.password-change-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.password-change-form {
+    gap: 18px;
+}
+
+.password-change-field {
+    gap: 8px;
+}
+
+.password-change-field label {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.password-change-input-row {
+    position: relative;
+
+    width: 100%;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+
+    border-radius: 13px;
+    background-color: rgba(255, 255, 255, 0.22);
+}
+
+.password-change-input-row.error {
+    outline: 1px solid rgba(255, 31, 22, 0.75);
+}
+
+.password-change-input-row.success {
+    outline: none;
+}
+
+.password-change-input-row input {
+    flex: 1;
+
+    width: 100%;
+    height: 100%;
+    padding: 0 54px 0 14px;
+
+    border: none;
+    outline: none;
+    background: transparent;
+
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.password-change-input-row input::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.current-password-check-btn {
+    position: absolute;
+    right: 10px;
+
+    width: 58px;
+    height: 26px;
+
+    border: none;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.58);
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.current-password-check-btn:hover {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.password-visibility-btn {
+    position: absolute;
+    right: 12px;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.password-eye-icon,
+.password-status-icon {
+    display: none;
+
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.46);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.password-eye-icon.active,
+.password-status-icon.active {
+    display: block;
+}
+
+#currentPasswordSuccessIcon {
+    position: absolute;
+    right: 15px;
+}
+
+#currentPasswordSuccessIcon svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.72);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.password-rule-message,
+.password-change-error {
+    margin: 0;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.password-change-submit-btn {
+    width: 100%;
+    height: 44px;
+    margin-top: 4px;
+
+    border: none;
+    border-radius: 8px;
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.password-change-submit-btn:hover {
+    background-color: #ff352d;
+}
+
+/* ==============================
+   비밀번호 변경 완료 토스트
+============================== */
+
+.password-change-complete-toast {
+    position: fixed;
+    top: 34px;
+    left: 50%;
+
+    transform: translateX(-50%) translateY(-12px);
+
+    min-width: 260px;
+    padding: 14px 22px;
+
+    border-radius: 12px;
+    background-color: rgba(20, 20, 20, 0.96);
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.42);
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3000;
+
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.password-change-complete-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ==============================
+   음성 녹음 UI
+============================== */
+
+.voice-record-modal {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 90;
+    pointer-events: none;
+}
+
+.voice-record-modal.hidden {
+    display: none;
+}
+
+.voice-record-box {
+    transform: translateY(115px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.voice-record-rings {
+    position: relative;
+
+    width: 150px;
+    height: 150px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-ring {
+    position: absolute;
+
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
+
+    animation: voicePulse 1.8s ease-in-out infinite;
+}
+
+.ring-1 {
+    width: 64px;
+    height: 64px;
+    animation-delay: 0s;
+}
+
+.ring-2 {
+    width: 92px;
+    height: 92px;
+    animation-delay: 0.15s;
+}
+
+.ring-3 {
+    width: 120px;
+    height: 120px;
+    animation-delay: 0.3s;
+}
+
+.ring-4 {
+    width: 148px;
+    height: 148px;
+    animation-delay: 0.45s;
+}
+
+.voice-record-core {
+    position: relative;
+    z-index: 2;
+
+    width: 72px;
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background-color: rgba(20, 20, 20, 0.95);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.voice-record-core svg {
+    width: 40px;
+    height: 40px;
+
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.voice-record-time {
+    margin: 10px 0 0;
+
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.mic-btn.listening svg {
+    stroke: #ff1f16;
+}
+
+@keyframes voicePulse {
+    0% {
+        opacity: 0.35;
+        transform: scale(0.96);
+    }
+
+    50% {
+        opacity: 0.75;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0.35;
+        transform: scale(0.96);
+    }
 }
 
 /* ==============================
