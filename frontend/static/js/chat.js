@@ -7,10 +7,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const historyMoreBtn = document.getElementById("historyMoreBtn");
     const historyDeleteBtn = document.getElementById("historyDeleteBtn");
 
+    const recommendSection = document.getElementById("recommendSection");
     const recommendList = document.getElementById("recommendList");
+
     const chatInput = document.getElementById("chatInput");
     const sendMessageBtn = document.getElementById("sendMessageBtn");
     const chatMessageArea = document.getElementById("chatMessageArea");
+    const chatScrollArea = document.getElementById("chatScrollArea");
     const chatIntro = document.getElementById("chatIntro");
     const textCount = document.getElementById("textCount");
 
@@ -20,6 +23,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const myInfoMenu = document.getElementById("myInfoMenu");
     const openMyInfoBtn = document.getElementById("openMyInfoBtn");
     const backSettingsBtn = document.getElementById("backSettingsBtn");
+
+    const logoutLink = document.getElementById("logoutLink");
+    const passwordChangeLink = document.getElementById("passwordChangeLink");
+    const withdrawLink = document.getElementById("withdrawLink");
 
     const recommendQuestions = [
         "2026년에 달라진 규정이 뭔가요?",
@@ -35,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "파워유닛 교체 페널티는 어떻게 적용돼?"
     ];
 
-    // 프론트에서만 임시로 관리하는 채팅 저장소
     let chatStore = {};
     let chatOrder = [];
     let activeChatId = null;
@@ -57,9 +63,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function showRecommendSection() {
+        if (!recommendSection) return;
+        recommendSection.classList.remove("hidden");
+    }
+
+    function hideRecommendSection() {
+        if (!recommendSection) return;
+        recommendSection.classList.add("hidden");
+    }
+
     function updateTextCount() {
         if (!chatInput || !textCount) return;
-
         textCount.textContent = `${chatInput.value.length}/300`;
     }
 
@@ -76,6 +91,8 @@ document.addEventListener("DOMContentLoaded", function () {
             chatInput.value = "";
         }
 
+        showRecommendSection();
+        renderRandomRecommendations();
         updateTextCount();
     }
 
@@ -105,7 +122,9 @@ document.addEventListener("DOMContentLoaded", function () {
         message.appendChild(timeSpan);
 
         chatMessageArea.appendChild(message);
-        chatMessageArea.scrollTop = chatMessageArea.scrollHeight;
+
+        const scrollTarget = chatScrollArea || chatMessageArea;
+        scrollTarget.scrollTop = scrollTarget.scrollHeight;
     }
 
     function renderMessages(chatId) {
@@ -119,12 +138,16 @@ document.addEventListener("DOMContentLoaded", function () {
             if (chatIntro) {
                 chatIntro.classList.remove("hidden");
             }
+
+            showRecommendSection();
             return;
         }
 
         if (chatIntro) {
             chatIntro.classList.add("hidden");
         }
+
+        hideRecommendSection();
 
         chat.messages.forEach(function (message) {
             addMessageElement(message.type, message.text);
@@ -257,8 +280,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, 350);
 
-        renderRandomRecommendations();
-
         if (chatInput) {
             chatInput.value = "";
         }
@@ -374,21 +395,41 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 1-1 사이드바 열기/닫기
+    function moveToPage(button, fallbackUrl) {
+        if (!button) return;
+
+        const url = button.dataset.url || fallbackUrl;
+
+        if (!url) return;
+
+        window.location.href = url;
+    }
+
+    function openPasswordChangeModal() {
+        const passwordChangeModal = document.getElementById("passwordChangeModal");
+
+        if (passwordChangeModal) {
+            passwordChangeModal.classList.remove("hidden");
+            return;
+        }
+
+        if (passwordChangeLink && passwordChangeLink.dataset.url) {
+            window.location.href = passwordChangeLink.dataset.url;
+        }
+    }
+
     if (sidebarToggle && chatSidebar) {
         sidebarToggle.addEventListener("click", function () {
             chatSidebar.classList.toggle("collapsed");
         });
     }
 
-    // 닫힌 상태의 + 버튼도 새 채팅으로 연결
     if (newChatBtn) {
         newChatBtn.addEventListener("click", function () {
             createNewChat();
         });
     }
 
-    // 2 대화기록 삭제 모드
     if (historyMoreBtn && historyDeleteBtn && historyList) {
         historyMoreBtn.addEventListener("click", function () {
             historyList.classList.toggle("delete-mode");
@@ -430,10 +471,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 3 추천 질문 랜덤 생성
-    renderRandomRecommendations();
-
-    // 직접 입력
     if (chatInput) {
         chatInput.addEventListener("input", updateTextCount);
 
@@ -448,7 +485,6 @@ document.addEventListener("DOMContentLoaded", function () {
         sendMessageBtn.addEventListener("click", sendCurrentMessage);
     }
 
-    // 4 설정 메뉴
     function openSettingsMenu() {
         if (settingsPanel) {
             settingsPanel.classList.remove("hidden");
@@ -512,8 +548,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // > 버튼 클릭
-    // 기존 설정창은 유지하고 오른쪽 내 정보 상세창만 열고 닫기
     if (openMyInfoBtn && myInfoMenu) {
         openMyInfoBtn.addEventListener("click", function (event) {
             event.preventDefault();
@@ -524,7 +558,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 뒤로가기 버튼이 있다면 오른쪽 메뉴만 닫기
     if (backSettingsBtn && myInfoMenu) {
         backSettingsBtn.addEventListener("click", function (event) {
             event.preventDefault();
@@ -535,7 +568,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 메뉴 내부 클릭 시 닫히지 않게 막기
     if (settingsPanel) {
         settingsPanel.addEventListener("click", function (event) {
             event.stopPropagation();
@@ -554,33 +586,27 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 각 항목 이동 처리
-    const logoutLink = document.getElementById("logoutLink");
-    const passwordChangeLink = document.getElementById("passwordChangeLink");
-    const withdrawLink = document.getElementById("withdrawLink");
-
     if (logoutLink) {
         logoutLink.addEventListener("click", function (event) {
             event.preventDefault();
-            window.location.href = "/logout/";
+            moveToPage(logoutLink, "/logout/");
         });
     }
 
     if (passwordChangeLink) {
         passwordChangeLink.addEventListener("click", function (event) {
             event.preventDefault();
-            window.location.href = "/password-change/";
+            openPasswordChangeModal();
         });
     }
 
     if (withdrawLink) {
         withdrawLink.addEventListener("click", function (event) {
             event.preventDefault();
-            window.location.href = "/withdraw/";
+            moveToPage(withdrawLink, "/withdraw/");
         });
     }
 
-    // 바깥 클릭 시 설정 메뉴 전체 닫기
     document.addEventListener("click", function (event) {
         const isSettingsArea =
             event.target.closest("#settingsBtn") ||
