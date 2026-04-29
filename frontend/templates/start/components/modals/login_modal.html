@@ -1,0 +1,64 @@
+<div id="loginModal" class="modal hidden">
+    <div class="modal-box login-modal-box">
+        <button type="button" class="modal-close">×</button>
+
+        <h2>For everyOne</h2>
+
+        <form class="login-form">
+            <div class="login-input-group">
+                <input
+                    type="text"
+                    id="loginEmail"
+                    name="email"
+                    placeholder="Email"
+                    autocomplete="email"
+                >
+
+                <p id="loginEmailError" class="input-error hidden">
+                    × 잘못된 이메일 양식입니다.
+                </p>
+            </div>
+
+            <div class="password-field">
+                <input type="hidden" id="loginPasswordReal" name="password">
+
+                <input
+                    id="loginPasswordDisplay"
+                    type="text"
+                    placeholder="Password"
+                    autocomplete="off"
+                >
+
+                <button
+                    type="button"
+                    id="loginPasswordToggle"
+                    class="password-toggle"
+                    aria-label="비밀번호 보기 전환"
+                >
+                    {% include "start/components/icons/eye_off.html" with icon_class="eye-icon" state_class="eye-off active" %}
+                    {% include "start/components/icons/eye_open.html" with icon_class="eye-icon" state_class="eye-open" %}
+                </button>
+            </div>
+
+            <p id="loginPasswordError" class="input-error hidden">
+                × 비밀번호가 일치하지 않습니다.
+            </p>
+
+            <div class="login-modal-links">
+                <button type="button" id="openPasswordModal" class="modal-text-btn">
+                    비밀번호 찾기
+                </button>
+
+                <span>|</span>
+
+                <button type="button" id="moveSignupModal" class="modal-text-btn">
+                    회원가입
+                </button>
+            </div>
+
+            <button type="button" id="loginSubmitBtn" class="login-submit-btn">
+                로그인
+            </button>
+        </form>
+    </div>
+</div>

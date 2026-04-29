@@ -1332,3 +1332,831 @@ body.modal-open .signup-link {
 #resetCodeInput.input-error-active {
     border-color: #ff1f16 !important;
 }
+
+/* 새 비밀번호 설정 모달 */
+
+.password-reset-modal-box {
+    width: 390px !important;
+    padding: 42px 34px 34px !important;
+
+    background-color: rgba(38, 38, 38, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 22px !important;
+
+    text-align: center;
+}
+
+.password-reset-modal-box h2 {
+    margin: 0 0 30px !important;
+
+    color: #ffffff !important;
+    font-size: 26px !important;
+    font-weight: 500 !important;
+}
+
+.password-reset-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px !important;
+}
+
+.password-reset-field {
+    width: 100%;
+    text-align: left;
+}
+
+.password-reset-field label {
+    display: block;
+    margin: 0 0 6px 2px;
+
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.reset-password-field {
+    position: relative;
+    width: 100%;
+}
+
+.reset-password-field input[type="hidden"] {
+    display: none;
+}
+
+.reset-password-field input[type="text"] {
+    width: 100%;
+    height: 43px;
+    padding: 0 44px 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.reset-password-field input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.reset-password-field.error input[type="text"] {
+    border-color: #ff1f16 !important;
+}
+
+.password-rule-message {
+    margin: 6px 0 0 4px;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#newPasswordMatchError {
+    margin: 6px 0 0 4px;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#newPasswordMatchError.hidden {
+    display: none;
+}
+
+/* 눈/체크 아이콘 버튼 */
+.reset-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer;
+}
+
+.reset-eye-icon,
+.reset-check-icon {
+    display: none !important;
+
+    width: 18px;
+    height: 18px;
+
+    fill: none !important;
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.reset-eye-icon.active,
+.reset-check-icon.active {
+    display: block !important;
+}
+
+.reset-password-toggle:hover .reset-eye-icon.active {
+    stroke: rgba(255, 255, 255, 0.85);
+}
+
+.reset-check-icon {
+    stroke: rgba(255, 255, 255, 0.9);
+}
+
+/* 확인 버튼 */
+.password-reset-confirm-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 4px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.password-reset-confirm-btn:hover {
+    background-color: #e91810;
+}
+
+/* 비밀번호 변경 완료 팝업 */
+.password-change-toast {
+    position: fixed;
+    top: 150px;
+    left: 50%;
+    z-index: 3000;
+
+    transform: translateX(-50%) translateY(-12px);
+
+    padding: 13px 22px;
+
+    border-radius: 10px;
+    background-color: rgba(20, 20, 20, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: 0.25s ease;
+}
+
+.password-change-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 회원가입 약관 동의 모달 */
+
+.signup-terms-modal-box {
+    width: 430px !important;
+    padding: 42px 36px 36px !important;
+
+    background-color: rgba(38, 38, 38, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 28px !important;
+
+    text-align: center;
+}
+
+.signup-terms-modal-box h2 {
+    margin: 0 0 32px;
+
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 500;
+}
+
+.terms-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.terms-section {
+    width: 100%;
+    text-align: left;
+}
+
+.terms-section h3 {
+    margin: 0 0 8px;
+
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.terms-scroll-box {
+    width: 100%;
+    height: 96px;
+    padding: 12px 14px;
+
+    overflow-y: auto;
+
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.92);
+    color: #111111;
+
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.terms-scroll-box p {
+    margin: 0 0 8px;
+}
+
+/* 스크롤바 */
+.terms-scroll-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.terms-scroll-box::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 999px;
+}
+
+.terms-scroll-box::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.32);
+    border-radius: 999px;
+}
+
+/* 체크박스 줄 */
+.terms-check-row {
+    margin-top: 8px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+.terms-check-row input {
+    display: none;
+}
+
+.terms-check-row span {
+    width: 14px;
+    height: 14px;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.85);
+}
+
+.terms-check-row input:checked + span {
+    background-color: #ff1f16;
+}
+
+.terms-check-row input:checked + span::after {
+    content: "✓";
+
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.all-check-row {
+    width: fit-content;
+    margin: 2px auto 0;
+}
+
+#termsError {
+    margin: -2px 0 0 4px;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#termsError.hidden {
+    display: none;
+}
+
+.terms-next-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 2px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.terms-next-btn:hover {
+    background-color: #e91810;
+}
+
+/* 약관 스크롤바 화살표 스타일 */
+
+.terms-scroll-box {
+    scrollbar-width: auto;
+    scrollbar-color: #9a9a9a #eeeeee;
+}
+
+/* 스크롤바 전체 */
+.terms-scroll-box::-webkit-scrollbar {
+    width: 12px;
+}
+
+/* 스크롤바 배경 */
+.terms-scroll-box::-webkit-scrollbar-track {
+    background-color: #eeeeee;
+    border-radius: 999px;
+}
+
+/* 스크롤바 움직이는 막대 */
+.terms-scroll-box::-webkit-scrollbar-thumb {
+    background-color: #9a9a9a;
+    border-radius: 999px;
+    border: 3px solid #eeeeee;
+}
+
+/* 위/아래 버튼 공통 */
+.terms-scroll-box::-webkit-scrollbar-button {
+    width: 12px;
+    height: 14px;
+    background-color: #eeeeee;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 7px 7px;
+}
+
+/* 위쪽 화살표 */
+.terms-scroll-box::-webkit-scrollbar-button:vertical:start {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M4 2L1 5h6L4 2z' fill='%23999999'/%3E%3C/svg%3E");
+    border-radius: 999px 999px 0 0;
+}
+
+/* 아래쪽 화살표 */
+.terms-scroll-box::-webkit-scrollbar-button:vertical:end {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M4 6L1 3h6L4 6z' fill='%23999999'/%3E%3C/svg%3E");
+    border-radius: 0 0 999px 999px;
+}
+
+/* 회원가입 입력 모달 - 화면설계 기준 */
+
+.signup-form-modal-box {
+    width: 430px !important;
+    padding: 42px 36px 36px !important;
+
+    background-color: rgba(38, 38, 38, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 24px !important;
+
+    text-align: center;
+}
+
+.signup-form-modal-box h2 {
+    margin: 0 0 30px !important;
+
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 500;
+}
+
+.signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.signup-field {
+    width: 100%;
+    text-align: left;
+}
+
+.signup-field label {
+    display: block;
+    margin: 0 0 6px 2px;
+
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 입력창 안쪽 버튼 구조 */
+.signup-input-button-row {
+    position: relative;
+    width: 100%;
+}
+
+.signup-input-button-row input {
+    width: 100%;
+    height: 43px;
+    padding: 0 82px 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.signup-input-button-row input::placeholder,
+.signup-password-box input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* 중복 확인 / 전송 버튼 */
+.signup-input-button-row .inside-btn {
+    position: absolute;
+    top: 50%;
+    right: 7px;
+
+    transform: translateY(-50%);
+
+    min-width: 58px;
+    height: 29px;
+    padding: 0 10px;
+
+    border: none;
+    border-radius: 15px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.signup-input-button-row .inside-btn:hover {
+    background-color: #e91810;
+}
+
+/* 비밀번호 입력창 */
+.signup-password-box {
+    position: relative;
+    width: 100%;
+}
+
+.signup-password-box input {
+    width: 100%;
+    height: 43px;
+    padding: 0 44px 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.signup-password-box.error input {
+    border-color: #ff1f16 !important;
+}
+
+/* 비밀번호 눈/체크 버튼 */
+.signup-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer;
+}
+
+.signup-eye-icon,
+.signup-check-icon {
+    display: none !important;
+
+    width: 18px;
+    height: 18px;
+
+    fill: none !important;
+    stroke: rgba(255, 255, 255, 0.58);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.signup-eye-icon.active,
+.signup-check-icon.active {
+    display: block !important;
+}
+
+.signup-password-toggle:hover .signup-eye-icon.active {
+    stroke: rgba(255, 255, 255, 0.85);
+}
+
+/* 에러/성공 메시지 */
+.signup-field .input-error,
+.signup-field .input-success,
+.signup-field .password-rule-message {
+    margin: 6px 0 0 4px;
+
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.signup-field .input-error,
+.signup-field .password-rule-message {
+    color: #ff1f16;
+}
+
+.signup-field .input-success {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    color: #ff1f16;
+}
+
+.signup-field .input-error.hidden,
+.signup-field .input-success.hidden {
+    display: none;
+}
+
+#signupEmail.input-error-active,
+#signupCode.input-error-active {
+    border-color: #ff1f16 !important;
+}
+
+/* 회원가입 버튼 */
+.signup-submit-btn {
+    width: 100%;
+    height: 43px;
+    margin-top: 6px;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #ff1f16;
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.signup-submit-btn:hover {
+    background-color: #e91810;
+}
+
+/* 회원가입 인증코드 오류 */
+#signupCode.input-error-active {
+    border-color: #ff1f16 !important;
+}
+
+#signupCodeError {
+    margin: 6px 0 0 4px;
+
+    color: #ff1f16;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#signupCodeError.hidden {
+    display: none;
+}
+
+/* 회원가입 완료 팝업 */
+.signup-complete-toast {
+    position: fixed;
+    top: 150px;
+    left: 50%;
+    z-index: 3000;
+
+    transform: translateX(-50%) translateY(-12px);
+
+    padding: 13px 22px;
+
+    border-radius: 10px;
+    background-color: rgba(20, 20, 20, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: 0.25s ease;
+}
+
+.signup-complete-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 회원가입 인증코드 타이머 */
+
+.signup-code-row input {
+    padding-right: 132px !important;
+}
+
+.signup-code-timer {
+    position: absolute;
+    top: 50%;
+    right: 72px;
+
+    transform: translateY(-50%);
+
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.signup-code-timer.expired {
+    color: #ff1f16;
+}
+
+.signup-code-timer.hidden {
+    display: none;
+}
+
+#signupCodeSendMessage,
+#signupCodeError,
+#signupCodeExpiredError {
+    margin: 6px 0 0 4px;
+
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+}
+
+#signupCodeError,
+#signupCodeExpiredError {
+    color: #ff1f16;
+}
+
+#signupCodeError.hidden,
+#signupCodeExpiredError.hidden,
+#signupCodeSendMessage.hidden {
+    display: none;
+}
+
+/* 회원가입 비밀번호 일치 체크 아이콘 */
+.signup-check-icon {
+    display: none !important;
+
+    width: 18px;
+    height: 18px;
+
+    fill: none !important;
+    stroke: rgba(255, 255, 255, 0.88);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.signup-check-icon.active {
+    display: block !important;
+}
+
+/* ==============================
+   회원가입 모달 최종 보정
+   버튼이 화면 밖으로 늘어나는 문제 해결
+============================== */
+
+.signup-form-modal-box {
+    width: 430px !important;
+    max-width: 90vw !important;
+    padding: 42px 36px 36px !important;
+
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.signup-form-modal-box * {
+    box-sizing: border-box !important;
+}
+
+.signup-form-modal-box .signup-form {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+
+    position: static !important;
+}
+
+/* 입력 영역 전부 모달 안쪽으로 고정 */
+.signup-form-modal-box .signup-field,
+.signup-form-modal-box .signup-input-button-row,
+.signup-form-modal-box .signup-password-box {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 회원가입 버튼이 화면 전체로 늘어나는 문제 방지 */
+.signup-form-modal-box .signup-submit-btn {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+
+    transform: none !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    height: 43px !important;
+    margin: 6px 0 0 !important;
+    padding: 0 !important;
+
+    display: block !important;
+    align-self: stretch !important;
+    flex: 0 0 auto !important;
+
+    border: none !important;
+    border-radius: 8px !important;
+
+    background-color: #ff1f16 !important;
+    color: #ffffff !important;
+
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+
+    cursor: pointer !important;
+}
+
+/* 모달 제목 선택 방지 */
+.modal-box h2 {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    cursor: default;
+}
+
+/* 시작 페이지 제목/로고도 선택 방지 */
+.start-content h1,
+.start-logo {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    cursor: default;
+}
+
+/* 로고 이미지 드래그 방지 */
+.start-logo {
+    pointer-events: none;
+    -webkit-user-drag: none;
+}

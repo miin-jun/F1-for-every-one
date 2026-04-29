@@ -27,5 +27,5 @@ def login_index(request):
 def logout_index(request):
     '''로그아웃'''
     logout(request)
-    print('로그아웃되었습니다.')
+    messages.info(request, '로그아웃되었습니다.')
     return redirect('login')
