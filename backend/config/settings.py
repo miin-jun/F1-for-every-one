@@ -6,7 +6,7 @@ SECRET_KEY = "django-insecure-chj3_b_8@j09hb!$i#x*0#&fg+vs%jvevvhoi$s44^e)#kglb*
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -15,9 +15,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "accounts"
-    "front",
     "accounts",
+    "front",
+    "chat",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -89,3 +89,7 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
+
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/chat/'
