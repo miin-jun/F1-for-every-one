@@ -71,14 +71,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    document.querySelectorAll(".modal").forEach(function (modal) {
-        modal.addEventListener("click", function (event) {
-            if (event.target === modal) {
-                closeAllModals();
-            }
-        });
-    });
-
     // 이메일 형식 검사 함수
     function isValidEmail(email) {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -97,6 +89,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const passwordDisplay = document.getElementById("loginPasswordDisplay");
     const passwordReal = document.getElementById("loginPasswordReal");
     const passwordToggle = document.getElementById("loginPasswordToggle");
+
+    let realPasswordValue = "";
+    let isPasswordVisible = false;
 
     function showLoginEmailError() {
         if (!loginEmailInput || !loginEmailError) return;
@@ -126,45 +121,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loginPasswordError.classList.add("hidden");
     }
 
-    if (loginSubmitBtn && loginEmailInput) {
-        loginSubmitBtn.addEventListener("click", function () {
-            const email = loginEmailInput.value.trim();
-            const password = passwordReal ? passwordReal.value.trim() : "";
-
-            if (!isValidEmail(email)) {
-                showLoginEmailError();
-                hideLoginPasswordError();
-                return;
-            }
-
-            hideLoginEmailError();
-
-            /*
-                임시 테스트용 비밀번호 검사
-                나중에 백엔드 로그인 API 연결 시 이 조건은 삭제하고,
-                로그인 실패 응답이 왔을 때 showLoginPasswordError() 실행
-            */
-            if (password !== "test1234!") {
-                showLoginPasswordError();
-                return;
-            }
-
-            hideLoginPasswordError();
-
-            console.log("로그인 성공 테스트:", email);
-        });
-    }
-
-    if (loginEmailInput) {
-        loginEmailInput.addEventListener("input", function () {
-            hideLoginEmailError();
-        });
-    }
-
-    // 로그인 비밀번호 별표 마스킹 + 눈 아이콘 전환
-    let realPasswordValue = "";
-    let isPasswordVisible = false;
-
     function updatePasswordView(cursorPosition) {
         if (!passwordDisplay || !passwordReal) {
             return;
@@ -183,6 +139,57 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function getLoginPasswordValue() {
+        if (passwordReal && passwordReal.value.trim() !== "") {
+            return passwordReal.value.trim();
+        }
+
+        if (realPasswordValue.trim() !== "") {
+            return realPasswordValue.trim();
+        }
+
+        if (passwordDisplay && isPasswordVisible) {
+            return passwordDisplay.value.trim();
+        }
+
+        return "";
+    }
+
+    if (loginSubmitBtn && loginEmailInput) {
+        loginSubmitBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            const email = loginEmailInput.value.trim();
+            const password = getLoginPasswordValue();
+
+            if (!isValidEmail(email)) {
+                showLoginEmailError();
+                hideLoginPasswordError();
+                return;
+            }
+
+            hideLoginEmailError();
+
+            // 테스트용 로그인 비밀번호
+            if (password !== "test1234!") {
+                showLoginPasswordError();
+                return;
+            }
+
+            hideLoginPasswordError();
+
+            // 로그인 성공 시 채팅 메인 페이지로 이동
+            window.location.assign("/chat/");
+        });
+    }
+
+    if (loginEmailInput) {
+        loginEmailInput.addEventListener("input", function () {
+            hideLoginEmailError();
+        });
+    }
+
+    // 로그인 비밀번호 별표 마스킹 + 눈 아이콘 전환
     if (passwordDisplay && passwordReal) {
         passwordDisplay.addEventListener("keydown", function (event) {
             const allowedKeys = [
@@ -274,11 +281,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const eyeOpen = passwordToggle.querySelector(".eye-open");
 
             if (isPasswordVisible) {
-                eyeOff.classList.remove("active");
-                eyeOpen.classList.add("active");
+                if (eyeOff) eyeOff.classList.remove("active");
+                if (eyeOpen) eyeOpen.classList.add("active");
             } else {
-                eyeOpen.classList.remove("active");
-                eyeOff.classList.add("active");
+                if (eyeOpen) eyeOpen.classList.remove("active");
+                if (eyeOff) eyeOff.classList.add("active");
             }
 
             updatePasswordView(realPasswordValue.length);
@@ -351,7 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-        // ==============================
+    // ==============================
     // 회원가입 입력 폼 처리
     // ==============================
 
@@ -470,6 +477,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 clearInterval(signupTimerId);
                 signupRemainSeconds = 0;
                 updateSignupCodeTimerText();
+                showSignupCodeExpiredError();
             }
         }, 1000);
     }
@@ -845,8 +853,6 @@ document.addEventListener("DOMContentLoaded", function () {
             showResetEmailSuccess();
             resetEmailSendBtn.textContent = "재전송";
             startResetCodeTimer();
-
-            console.log("비밀번호 찾기 인증코드 발송:", email);
         });
     }
 
