@@ -83,64 +83,109 @@
 
         <div class="sidebar-bottom">
     <div class="user-info">
-        <div class="user-avatar"></div>
-        <span>helloworld@gmail.com</span>
-    </div>
+    <div class="user-avatar"></div>
+
+    <span>
+        {% if request.user.is_authenticated %}
+            {% if request.user.email %}
+                {{ request.user.email }}
+            {% else %}
+                {{ request.user.username }}
+            {% endif %}
+        {% else %}
+            Admin
+        {% endif %}
+    </span>
+</div>
 
     <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">
         ⚙
     </button>
 
     <!-- 설정 메뉴 전체 패널 -->
-    <div class="settings-panel hidden" id="settingsPanel">
+<div class="settings-panel hidden" id="settingsPanel">
 
-        <!-- 4-1 설정 메뉴 -->
-        <div class="settings-menu" id="settingsMenu">
-            <div class="settings-row settings-row-with-arrow">
-                <!-- 내 정보는 클릭/hover 변화 없음 -->
-                <div class="settings-row-main settings-row-disabled">
-                    <span class="settings-icon">✎</span>
-                    <span>내 정보</span>
-                </div>
-
-                <!-- 이 버튼만 오른쪽 창 열기 -->
-                <button type="button" class="settings-arrow-btn" id="openMyInfoBtn" aria-label="내 정보 상세 메뉴 열기">
-                    ›
-                </button>
+    <!-- 4-1 설정 메뉴 -->
+    <div class="settings-menu" id="settingsMenu">
+        <div class="settings-row settings-row-with-arrow">
+            <!-- 내 정보는 클릭/hover 변화 없음 -->
+            <div class="settings-row-main settings-row-disabled">
+                <span class="settings-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 20H21"></path>
+                        <path d="M16.5 3.5A2.1 2.1 0 0 1 19.5 6.5L7 19L3 20L4 16L16.5 3.5Z"></path>
+                    </svg>
+                </span>
+                <span>내 정보</span>
             </div>
 
-            <button type="button" class="settings-row" id="logoutLink">
-                <span class="settings-icon">↪</span>
-                <span>로그아웃</span>
+            <!-- 이 버튼만 오른쪽 창 열기 -->
+            <button type="button" class="settings-arrow-btn" id="openMyInfoBtn" aria-label="내 정보 상세 메뉴 열기">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 18L15 12L9 6"></path>
+                </svg>
             </button>
         </div>
 
-        <!-- 4-2 내 정보 상세 메뉴 -->
-        <div class="settings-menu settings-sub-menu hidden" id="myInfoMenu">
-            <button type="button" class="settings-row" id="passwordChangeLink">
-                <span class="settings-icon">⌕</span>
-                <span>비밀번호 변경</span>
-            </button>
+        <button type="button" class="settings-row" id="logoutLink">
+            <span class="settings-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H9"></path>
+                    <path d="M16 17L21 12L16 7"></path>
+                    <path d="M21 12H9"></path>
+                </svg>
+            </span>
+            <span>로그아웃</span>
+        </button>
+    </div>
 
-            <button type="button" class="settings-row" id="withdrawLink">
-                <span class="settings-icon">⌘</span>
-                <span>회원 탈퇴</span>
-            </button>
-        </div>
+    <!-- 4-2 내 정보 상세 메뉴 -->
+    <div class="settings-menu settings-sub-menu hidden" id="myInfoMenu">
+        <button type="button" class="settings-row" id="passwordChangeLink">
+            <span class="settings-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="7.5" cy="15.5" r="4.5"></circle>
+                    <path d="M11 12L21 2"></path>
+                    <path d="M17 6L19 8"></path>
+                    <path d="M14 9L16 11"></path>
+                </svg>
+            </span>
+            <span>비밀번호 변경</span>
+        </button>
+
+        <button type="button" class="settings-row" id="withdrawLink">
+            <span class="settings-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 21V19A4 4 0 0 0 12 15H6A4 4 0 0 0 2 19V21"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M17 8L22 13"></path>
+                    <path d="M22 8L17 13"></path>
+                </svg>
+            </span>
+            <span>회원 탈퇴</span>
+        </button>
     </div>
 </div>
     </aside>
 
     <!-- 메인 채팅 영역 -->
     <main class="chat-main">
-        <section class="chat-intro" id="chatIntro">
-            <h1>For everyOne</h1>
-            <p>F1에 대해 무엇이든 물어보세요!</p>
+        
+        <!-- 현재 채팅 제목 -->
+    <section class="chat-title-bar">
+        <h2 id="currentChatTitle">새 채팅</h2>
+    </section>
+
+    <section class="chat-intro" id="chatIntro">
+        <h1>For everyOne</h1>
+        <p>F1에 대해 무엇이든 물어보세요!</p>
+    </section>
+
+        <section class="chat-scroll-area" id="chatScrollArea">
+        <div class="chat-message-area" id="chatMessageArea"></div>
         </section>
 
-        <section class="chat-message-area" id="chatMessageArea"></section>
-
-        <section class="recommend-section">
+        <section class="recommend-section" id="recommendSection">
             <h3>추천 질문</h3>
 
             <div class="recommend-list" id="recommendList">
