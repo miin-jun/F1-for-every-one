@@ -1,0 +1,82 @@
+<div id="signupModal" class="modal hidden">
+    <div class="modal-box signup-terms-modal-box">
+        <button type="button" class="modal-close">×</button>
+
+        <h2>회원가입</h2>
+
+        <div class="terms-form">
+            <div class="terms-section">
+                <h3>이용약관</h3>
+
+                <div class="terms-scroll-box">
+                    <p><strong>제 1장 총칙</strong></p>
+                    <p>
+                        제 1조 목적. 이 이용약관은 For everyOne 사이트에서 제공하는 인터넷 서비스 이용과 관련하여
+                        사이트와 사용자의 권리, 의무, 책임사항과 기타 필요한 사항을 규정함을 목적으로 합니다.
+                    </p>
+
+                    <p><strong>제 2조 용어의 정의</strong></p>
+                    <p>
+                        사용자는 본 사이트에 접속하여 이 약관에 따라 본 사이트가 제공하는 서비스를 받는 회원 및
+                        비회원을 말합니다.
+                    </p>
+
+                    <p><strong>제 3조 약관의 효력</strong></p>
+                    <p>
+                        본 약관은 서비스 화면에 게시하거나 기타 방법으로 공지함으로써 효력이 발생합니다.
+                    </p>
+                </div>
+
+                <label class="terms-check-row">
+                    <input type="checkbox" id="agreeTerms">
+                    <span></span>
+                    위 이용약관에 동의합니다.
+                </label>
+            </div>
+
+            <div class="terms-section">
+                <h3>개인정보 수집 및 활용</h3>
+
+                <div class="terms-scroll-box">
+                    <p><strong>For everyOne</strong></p>
+                    <p>
+                        이용조건, 절차, 회원규칙, 기타 필요한 사항을 규정함을 목적으로 합니다.
+                    </p>
+
+                    <p><strong>① 수집항목</strong></p>
+                    <p>
+                        For everyOne은 회원가입 및 기본적인 서비스 제공을 위해 필수정보와 추가적인 서비스 제공을 위해
+                        필요한 선택정보를 구분하여 아래와 같은 개인정보를 수집하고 있습니다.
+                    </p>
+                    <p>- 필수항목: 이메일, 비밀번호</p>
+                    <p>- 선택항목: 해당사항 없음</p>
+
+                    <p><strong>② 이용목적</strong></p>
+                    <p>
+                        수집된 개인정보는 회원 식별, 서비스 제공, 비밀번호 재설정, 고객 문의 대응을 위해 사용됩니다.
+                    </p>
+                </div>
+
+                <label class="terms-check-row">
+                    <input type="checkbox" id="agreePrivacy">
+                    <span></span>
+                    개인정보 수집 및 활용에 동의합니다.
+                </label>
+            </div>
+
+            <label class="terms-check-row all-check-row">
+                <input type="checkbox" id="agreeAll">
+                <span></span>
+                전체 동의
+            </label>
+
+            <p id="termsError" class="input-error hidden">
+                × 필수 약관에 모두 동의해주세요.
+            </p>
+
+            <button type="button" id="goSignupFormBtn" class="terms-next-btn">
+                다음
+            </button>
+        </div>
+    </div>
+</div>
