@@ -2135,3 +2135,28 @@ body.modal-open .signup-link {
 
     cursor: pointer !important;
 }
+
+/* 모달 제목 선택 방지 */
+.modal-box h2 {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    cursor: default;
+}
+
+/* 시작 페이지 제목/로고도 선택 방지 */
+.start-content h1,
+.start-logo {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    cursor: default;
+}
+
+/* 로고 이미지 드래그 방지 */
+.start-logo {
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
