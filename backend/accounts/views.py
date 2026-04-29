@@ -2,18 +2,46 @@
 import random
 import string
 
+from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .models import User
-
 
 def _get_cache_key(email):
     return f"signup_code:{email}"
 
+@csrf_exempt
+@require_POST
+def login_index(request):
+    '''로그인 뷰'''
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '').strip()
+    
+    if not email or not password:
+        return JsonResponse({"ok": False, "error": "이메일과 비밀번호를 입력해주세요."}, status=400)
+    
+    user = authenticate(request, username=email, password=password)
+    
+    if user is not None:
+        login(request, user)
+        return JsonResponse({"ok": True, "redirect": "/chat/"}) 
+    else:
+        return JsonResponse({"ok": False, "error": "이메일 또는 비밀번호가 일치하지 않습니다."})
+
+
+@csrf_exempt
+@require_POST
+def logout_index(request):
+    '''로그아웃 뷰'''
+    if request.user.is_authenticated:
+        logout(request)
+        return JsonResponse({"ok": True, "redirect": "/"})
+    
+    return JsonResponse({"ok": False, "error": "로그인 상태가 아닙니다."}, status=400)
 
 @csrf_exempt
 @require_POST
