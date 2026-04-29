@@ -1,3 +1,6 @@
+
+
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
@@ -12,12 +15,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None):
-        user = self.create_user(email, password)
-        user.is_staff = True
-        user.is_superuser = True
-        user.save(using=self._db)
-        return user
+
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -27,11 +25,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="가입일")
 
     USERNAME_FIELD = "email"
+    def create_superuser(self, email, password=None):
+        user = self.create_user(email, password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
     class Meta:
+
         verbose_name = "사용자"
         verbose_name_plural = "사용자 목록"
 

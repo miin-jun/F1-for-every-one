@@ -1,3 +1,4 @@
+
 import random
 import string
 
@@ -68,3 +69,4 @@ def signup(request):
     cache.delete(_get_cache_key(email))
 
     return JsonResponse({"ok": True}, status=201)
+

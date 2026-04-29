@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "accounts"
     "front",
     "accounts",
 ]
@@ -72,6 +73,8 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "../frontend/static"]
 
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -79,6 +82,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = '보내는 Gmail 주소'
 EMAIL_HOST_PASSWORD = '이메일 인증 번호'
 DEFAULT_FROM_EMAIL = "noreply@foreveryone.com"
+
 
 CACHES = {
     "default": {
