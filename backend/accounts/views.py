@@ -2,29 +2,17 @@
 import random
 import string
 
+from django.contrib.auth import authenticate, login, logout
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .models import User
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from django.contrib import messages
-
 def _get_cache_key(email):
     return f"signup_code:{email}"
-
-
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-
 
 @csrf_exempt
 @require_POST
