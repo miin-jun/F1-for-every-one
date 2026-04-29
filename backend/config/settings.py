@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+<<<<<<< HEAD
     "accounts"
+=======
+    "front",
+>>>>>>> 72b591d70cd28a9188068b38546f866770bb32c5
 ]
 
 MIDDLEWARE = [
@@ -55,7 +59,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+
+        "DIRS": [BASE_DIR / '../frontend/templates'],
+
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -115,8 +121,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "static/"
 
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / '../frontend/static'] 
 
 LOGIN_URL = '/accounts/login/'
-LOGOUT_REDIRECT_URL = '/accouznts/login/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
