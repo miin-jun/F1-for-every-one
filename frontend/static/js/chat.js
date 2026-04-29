@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const textCount = document.getElementById("textCount");
 
     const settingsBtn = document.getElementById("settingsBtn");
+    const settingsPanel = document.getElementById("settingsPanel");
     const settingsMenu = document.getElementById("settingsMenu");
     const myInfoMenu = document.getElementById("myInfoMenu");
     const openMyInfoBtn = document.getElementById("openMyInfoBtn");
@@ -79,33 +80,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getCurrentTime() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
 
-    return `${hours}:${minutes}`;
-}
+        return `${hours}:${minutes}`;
+    }
 
-function addMessageElement(type, text) {
-    if (!chatMessageArea) return;
+    function addMessageElement(type, text) {
+        if (!chatMessageArea) return;
 
-    const message = document.createElement("div");
-    message.className = `chat-message ${type}`;
+        const message = document.createElement("div");
+        message.className = `chat-message ${type}`;
 
-    const textSpan = document.createElement("span");
-    textSpan.className = "chat-message-text";
-    textSpan.textContent = text;
+        const textSpan = document.createElement("span");
+        textSpan.className = "chat-message-text";
+        textSpan.textContent = text;
 
-    const timeSpan = document.createElement("span");
-    timeSpan.className = "chat-message-time";
-    timeSpan.textContent = getCurrentTime();
+        const timeSpan = document.createElement("span");
+        timeSpan.className = "chat-message-time";
+        timeSpan.textContent = getCurrentTime();
 
-    message.appendChild(textSpan);
-    message.appendChild(timeSpan);
+        message.appendChild(textSpan);
+        message.appendChild(timeSpan);
 
-    chatMessageArea.appendChild(message);
-    chatMessageArea.scrollTop = chatMessageArea.scrollHeight;
-}
+        chatMessageArea.appendChild(message);
+        chatMessageArea.scrollTop = chatMessageArea.scrollHeight;
+    }
 
     function renderMessages(chatId) {
         if (!chatMessageArea) return;
@@ -448,38 +449,149 @@ function addMessageElement(type, text) {
     }
 
     // 4 설정 메뉴
-    if (settingsBtn && settingsMenu && myInfoMenu) {
+    function openSettingsMenu() {
+        if (settingsPanel) {
+            settingsPanel.classList.remove("hidden");
+
+            if (settingsMenu) {
+                settingsMenu.classList.remove("hidden");
+            }
+
+            return;
+        }
+
+        if (settingsMenu) {
+            settingsMenu.classList.remove("hidden");
+        }
+    }
+
+    function closeSettingsMenu() {
+        if (settingsPanel) {
+            settingsPanel.classList.add("hidden");
+        } else if (settingsMenu) {
+            settingsMenu.classList.add("hidden");
+        }
+
+        if (myInfoMenu) {
+            myInfoMenu.classList.add("hidden");
+        }
+    }
+
+    function toggleSettingsMenu() {
+        if (settingsPanel) {
+            settingsPanel.classList.toggle("hidden");
+
+            if (!settingsPanel.classList.contains("hidden")) {
+                if (settingsMenu) {
+                    settingsMenu.classList.remove("hidden");
+                }
+
+                if (myInfoMenu) {
+                    myInfoMenu.classList.add("hidden");
+                }
+            }
+
+            return;
+        }
+
+        if (settingsMenu) {
+            settingsMenu.classList.toggle("hidden");
+
+            if (!settingsMenu.classList.contains("hidden") && myInfoMenu) {
+                myInfoMenu.classList.add("hidden");
+            }
+        }
+    }
+
+    if (settingsBtn) {
         settingsBtn.addEventListener("click", function (event) {
+            event.preventDefault();
             event.stopPropagation();
 
-            settingsMenu.classList.toggle("hidden");
+            toggleSettingsMenu();
+        });
+    }
+
+    // > 버튼 클릭
+    // 기존 설정창은 유지하고 오른쪽 내 정보 상세창만 열고 닫기
+    if (openMyInfoBtn && myInfoMenu) {
+        openMyInfoBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            openSettingsMenu();
+            myInfoMenu.classList.toggle("hidden");
+        });
+    }
+
+    // 뒤로가기 버튼이 있다면 오른쪽 메뉴만 닫기
+    if (backSettingsBtn && myInfoMenu) {
+        backSettingsBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            openSettingsMenu();
             myInfoMenu.classList.add("hidden");
         });
     }
 
-    if (openMyInfoBtn && settingsMenu && myInfoMenu) {
-        openMyInfoBtn.addEventListener("click", function () {
-            settingsMenu.classList.add("hidden");
-            myInfoMenu.classList.remove("hidden");
+    // 메뉴 내부 클릭 시 닫히지 않게 막기
+    if (settingsPanel) {
+        settingsPanel.addEventListener("click", function (event) {
+            event.stopPropagation();
         });
     }
 
-    if (backSettingsBtn && settingsMenu && myInfoMenu) {
-        backSettingsBtn.addEventListener("click", function () {
-            myInfoMenu.classList.add("hidden");
-            settingsMenu.classList.remove("hidden");
+    if (settingsMenu) {
+        settingsMenu.addEventListener("click", function (event) {
+            event.stopPropagation();
         });
     }
 
+    if (myInfoMenu) {
+        myInfoMenu.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+    }
+
+    // 각 항목 이동 처리
+    const logoutLink = document.getElementById("logoutLink");
+    const passwordChangeLink = document.getElementById("passwordChangeLink");
+    const withdrawLink = document.getElementById("withdrawLink");
+
+    if (logoutLink) {
+        logoutLink.addEventListener("click", function (event) {
+            event.preventDefault();
+            window.location.href = "/logout/";
+        });
+    }
+
+    if (passwordChangeLink) {
+        passwordChangeLink.addEventListener("click", function (event) {
+            event.preventDefault();
+            window.location.href = "/password-change/";
+        });
+    }
+
+    if (withdrawLink) {
+        withdrawLink.addEventListener("click", function (event) {
+            event.preventDefault();
+            window.location.href = "/withdraw/";
+        });
+    }
+
+    // 바깥 클릭 시 설정 메뉴 전체 닫기
     document.addEventListener("click", function (event) {
         const isSettingsArea =
             event.target.closest("#settingsBtn") ||
+            event.target.closest("#settingsPanel") ||
             event.target.closest("#settingsMenu") ||
-            event.target.closest("#myInfoMenu");
+            event.target.closest("#myInfoMenu") ||
+            event.target.closest("#openMyInfoBtn") ||
+            event.target.closest("#backSettingsBtn");
 
         if (!isSettingsArea) {
-            if (settingsMenu) settingsMenu.classList.add("hidden");
-            if (myInfoMenu) myInfoMenu.classList.add("hidden");
+            closeSettingsMenu();
         }
     });
 
