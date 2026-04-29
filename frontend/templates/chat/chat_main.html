@@ -68,47 +68,53 @@
         </section>
 
         <div class="sidebar-bottom">
-            <div class="user-info">
-                <div class="user-avatar"></div>
-                <span>helloworld@gmail.com</span>
-            </div>
+    <div class="user-info">
+        <div class="user-avatar"></div>
+        <span>helloworld@gmail.com</span>
+    </div>
 
-            <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">
-                ⚙
-            </button>
+    <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">
+        ⚙
+    </button>
 
-            <!-- 4-1 설정 메뉴 -->
-            <div class="settings-menu hidden" id="settingsMenu">
-                <button type="button" class="settings-row" id="openMyInfoBtn">
+    <!-- 설정 메뉴 전체 패널 -->
+    <div class="settings-panel hidden" id="settingsPanel">
+
+        <!-- 4-1 설정 메뉴 -->
+        <div class="settings-menu" id="settingsMenu">
+            <div class="settings-row settings-row-with-arrow">
+                <!-- 내 정보는 클릭/hover 변화 없음 -->
+                <div class="settings-row-main settings-row-disabled">
                     <span class="settings-icon">✎</span>
                     <span>내 정보</span>
-                    <span class="settings-arrow">›</span>
-                </button>
+                </div>
 
-                <button type="button" class="settings-row">
-                    <span class="settings-icon">↪</span>
-                    <span>로그아웃</span>
+                <!-- 이 버튼만 오른쪽 창 열기 -->
+                <button type="button" class="settings-arrow-btn" id="openMyInfoBtn" aria-label="내 정보 상세 메뉴 열기">
+                    ›
                 </button>
             </div>
 
-            <!-- 4-2 내 정보 메뉴 -->
-            <div class="settings-menu settings-sub-menu hidden" id="myInfoMenu">
-                <button type="button" class="settings-row" id="backSettingsBtn">
-                    <span class="settings-icon">‹</span>
-                    <span>내 정보</span>
-                </button>
-
-                <button type="button" class="settings-row">
-                    <span class="settings-icon">🔑</span>
-                    <span>비밀번호 변경</span>
-                </button>
-
-                <button type="button" class="settings-row">
-                    <span class="settings-icon">✂</span>
-                    <span>회원 탈퇴</span>
-                </button>
-            </div>
+            <button type="button" class="settings-row" id="logoutLink">
+                <span class="settings-icon">↪</span>
+                <span>로그아웃</span>
+            </button>
         </div>
+
+        <!-- 4-2 내 정보 상세 메뉴 -->
+        <div class="settings-menu settings-sub-menu hidden" id="myInfoMenu">
+            <button type="button" class="settings-row" id="passwordChangeLink">
+                <span class="settings-icon">⌕</span>
+                <span>비밀번호 변경</span>
+            </button>
+
+            <button type="button" class="settings-row" id="withdrawLink">
+                <span class="settings-icon">⌘</span>
+                <span>회원 탈퇴</span>
+            </button>
+        </div>
+    </div>
+</div>
     </aside>
 
     <!-- 메인 채팅 영역 -->
