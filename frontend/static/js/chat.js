@@ -905,7 +905,7 @@ document.addEventListener("DOMContentLoaded", function () {
                              document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
             
             // 백엔드 API 호출
-            fetch('/accounts/change_password/', {
+            fetch('/accounts/change-password/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
