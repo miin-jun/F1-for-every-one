@@ -3,7 +3,6 @@ let chatOrder = [];
 let activeChatId = null;
 let chatSeq = 0;
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const chatSidebar = document.getElementById("chatSidebar");
     const sidebarToggle = document.getElementById("sidebarToggle");
@@ -36,8 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const passwordChangeModal = document.getElementById("passwordChangeModal");
 
-
-
     const recommendQuestions = [
         "2026년에 달라진 규정이 뭔가요?",
         "지금 시즌 1위 드라이버가 누구야?",
@@ -51,16 +48,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "각 플래그 별 의미가 뭐야?",
         "파워유닛 교체 페널티는 어떻게 적용돼?"
     ];
-
-    // let chatStore = {};
-    // let chatOrder = [];
-    // let activeChatId = null;
-    // let chatSeq = 0;
-
-    // function makeChatId() {
-    //     chatSeq += 1;
-    //     return `chat-${chatSeq}`;
-    // }
 
     function makeChatId() {
         chatSeq += 1;
@@ -135,7 +122,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         updateTextCount();
     }
-
 
     function makeShortTitle(text) {
         if (!text) return "새 채팅";
@@ -420,42 +406,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // function seedInitialHistory() {
-    //     if (!historyList) return;
-
-    //     const initialTitles = [];
-
-    //     historyList.querySelectorAll(".history-title").forEach(function (button) {
-    //         const title = button.textContent.trim();
-
-    //         if (title && title !== "대화 기록이 없습니다.") {
-    //             initialTitles.push(title);
-    //         }
-    //     });
-
-    //     initialTitles.forEach(function (title) {
-    //         const chatId = makeChatId();
-
-    //         chatStore[chatId] = {
-    //             title: title,
-    //             messages: [
-    //                 {
-    //                     type: "user",
-    //                     text: title
-    //                 },
-    //                 {
-    //                     type: "bot",
-    //                     text: "이전 대화 예시입니다. 실제 저장 대화는 백엔드 연결 후 불러올 수 있습니다."
-    //                 }
-    //             ]
-    //         };
-
-    //         chatOrder.push(chatId);
-    //     });
-
-    //     renderHistory();
-    // }
-
     function renderRandomRecommendations() {
         if (!recommendList) return;
 
@@ -516,41 +466,6 @@ document.addEventListener("DOMContentLoaded", function () {
             historyDeleteBtn.classList.toggle("hidden");
         });
     }
-
-    // if (historyDeleteBtn && historyList) {
-    //     historyDeleteBtn.addEventListener("click", function () {
-    //         const checkedItems = historyList.querySelectorAll(".history-check:checked");
-    //         const deletedChatIds = [];
-
-    //         checkedItems.forEach(function (checkbox) {
-    //             const item = checkbox.closest("li");
-
-    //             if (!item) return;
-
-    //             const chatId = item.dataset.chatId;
-
-    //             if (chatId) {
-    //                 deletedChatIds.push(chatId);
-    //                 delete chatStore[chatId];
-    //             }
-    //         });
-
-    //         chatOrder = chatOrder.filter(function (chatId) {
-    //             return !deletedChatIds.includes(chatId);
-    //         });
-
-    //         if (deletedChatIds.includes(activeChatId)) {
-    //             activeChatId = null;
-    //             clearChatScreen();
-    //         }
-
-    //         historyList.classList.remove("delete-mode");
-    //         historyDeleteBtn.classList.add("hidden");
-
-    //         renderHistory();
-    //     });
-    // }
-
 
     if (historyDeleteBtn && historyList) {
         historyDeleteBtn.addEventListener("click", async function () {
@@ -758,22 +673,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // if (passwordChangeLink) {
-    // passwordChangeLink.addEventListener('click', function() {
-    //     console.log('비밀번호 변경 버튼 클릭!');
-        
-    //     // 설정 패널 닫기
-    //     const settingsPanel = document.getElementById('settingsPanel');
-    //     if (settingsPanel) {
-    //         settingsPanel.classList.add('hidden');
-    //     }
-        
-    //     // 비밀번호 변경 모달 열기
-    //     if (passwordChangeModal) {
-    //         passwordChangeModal.classList.remove('hidden');
-    //     }
-    // });
-
     document.addEventListener("click", function (event) {
         const isSettingsArea =
             event.target.closest("#settingsBtn") ||
@@ -793,13 +692,10 @@ document.addEventListener("DOMContentLoaded", function () {
     clearChatScreen();
     updateTextCount();
 
-<<<<<<< HEAD
     const titleBar = document.querySelector('.chat-title-bar');
     if (titleBar) {
         titleBar.classList.add('hidden');
     }
-});
-=======
 
     const modalCloses = document.querySelectorAll('.modal-close');
     modalCloses.forEach(function(btn) {
@@ -1043,4 +939,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 }); 
->>>>>>> ed217cb9e1f38f2e874c6696c1b8f19ab9a5244d
