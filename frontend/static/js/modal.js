@@ -590,7 +590,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (signupEmailCheckBtn && signupEmailInput) {
-        signupEmailCheckBtn.addEventListener("click", function () {
+        signupEmailCheckBtn.addEventListener("click", async function () {
             const email = signupEmailInput.value.trim();
 
             isSignupEmailChecked = false;
@@ -600,13 +600,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            if (duplicateEmails.includes(email)) {
-                showSignupEmailDuplicateError();
-                return;
+            // if (duplicateEmails.includes(email)) {
+            //     showSignupEmailDuplicateError();
+            //     return;
+            // }
+            try {
+                const formData = new FormData();
+                formData.append('email', email);
+
+                const response = await fetch('/accounts/check-email/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    // 사용 가능
+                    isSignupEmailChecked = true;
+                    showSignupEmailAvailable();
+                } else {
+                    // 중복
+                    showSignupEmailDuplicateError();
+                }
+            } catch (error) {
+                console.error('이메일 확인 에러:', error);
+                alert('이메일 확인 중 오류가 발생했습니다.');
             }
 
-            isSignupEmailChecked = true;
-            showSignupEmailAvailable();
+            // isSignupEmailChecked = true;
+            // showSignupEmailAvailable();
         });
     }
 
@@ -672,68 +695,68 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (signupSubmitBtn) {
-        signupSubmitBtn.addEventListener("click", function () {
-            const email = signupEmailInput ? signupEmailInput.value.trim() : "";
-            const password = signupPassword ? signupPassword.value.trim() : "";
-            const passwordCheck = signupPasswordCheck ? signupPasswordCheck.value.trim() : "";
-            const code = signupCodeInput ? signupCodeInput.value.trim() : "";
+    // if (signupSubmitBtn) {
+    //     signupSubmitBtn.addEventListener("click", function () {
+    //         const email = signupEmailInput ? signupEmailInput.value.trim() : "";
+    //         const password = signupPassword ? signupPassword.value.trim() : "";
+    //         const passwordCheck = signupPasswordCheck ? signupPasswordCheck.value.trim() : "";
+    //         const code = signupCodeInput ? signupCodeInput.value.trim() : "";
 
-            if (!isValidEmail(email)) {
-                showSignupEmailFormatError();
-                return;
-            }
+    //         if (!isValidEmail(email)) {
+    //             showSignupEmailFormatError();
+    //             return;
+    //         }
 
-            if (!isSignupEmailChecked) {
-                showSignupEmailDuplicateError();
-                return;
-            }
+    //         if (!isSignupEmailChecked) {
+    //             showSignupEmailDuplicateError();
+    //             return;
+    //         }
 
-            if (!isValidSignupPassword(password)) {
-                if (signupPassword) {
-                    signupPassword.parentElement.classList.add("error");
-                }
-                return;
-            }
+    //         if (!isValidSignupPassword(password)) {
+    //             if (signupPassword) {
+    //                 signupPassword.parentElement.classList.add("error");
+    //             }
+    //             return;
+    //         }
 
-            if (password !== passwordCheck) {
-                if (signupPassword) signupPassword.parentElement.classList.add("error");
-                if (signupPasswordCheck) signupPasswordCheck.parentElement.classList.add("error");
-                if (signupPasswordMatchError) signupPasswordMatchError.classList.remove("hidden");
-                return;
-            }
+    //         if (password !== passwordCheck) {
+    //             if (signupPassword) signupPassword.parentElement.classList.add("error");
+    //             if (signupPasswordCheck) signupPasswordCheck.parentElement.classList.add("error");
+    //             if (signupPasswordMatchError) signupPasswordMatchError.classList.remove("hidden");
+    //             return;
+    //         }
 
-            if (signupRemainSeconds <= 0) {
-                showSignupCodeExpiredError();
-                return;
-            }
+    //         if (signupRemainSeconds <= 0) {
+    //             showSignupCodeExpiredError();
+    //             return;
+    //         }
 
-            if (code !== testSignupCode) {
-                showSignupCodeError();
-                return;
-            }
+    //         if (code !== testSignupCode) {
+    //             showSignupCodeError();
+    //             return;
+    //         }
 
-            hideSignupCodeMessages();
-            showSignupCompleteToast();
+    //         hideSignupCodeMessages();
+    //         showSignupCompleteToast();
 
-            if (signupEmailInput) signupEmailInput.value = "";
-            if (signupPassword) signupPassword.value = "";
-            if (signupPasswordCheck) signupPasswordCheck.value = "";
-            if (signupCodeInput) signupCodeInput.value = "";
+    //         if (signupEmailInput) signupEmailInput.value = "";
+    //         if (signupPassword) signupPassword.value = "";
+    //         if (signupPasswordCheck) signupPasswordCheck.value = "";
+    //         if (signupCodeInput) signupCodeInput.value = "";
 
-            isSignupEmailChecked = false;
-            signupRemainSeconds = 0;
+    //         isSignupEmailChecked = false;
+    //         signupRemainSeconds = 0;
 
-            if (signupCodeTimer) {
-                signupCodeTimer.classList.add("hidden");
-            }
+    //         if (signupCodeTimer) {
+    //             signupCodeTimer.classList.add("hidden");
+    //         }
 
-            setTimeout(function () {
-                closeAllModals();
-                openModal(loginModal);
-            }, 900);
-        });
-    }
+    //         setTimeout(function () {
+    //             closeAllModals();
+    //             openModal(loginModal);
+    //         }, 900);
+    //     });
+    // }
 
     // ==============================
     // 비밀번호 찾기 - 이메일 인증 처리
