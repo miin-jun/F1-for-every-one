@@ -17,7 +17,6 @@ def _get_cache_key(email):
 @csrf_exempt
 @require_POST
 def login_index(request):
-    '''로그인 뷰'''
     email = request.POST.get('email', '').strip()
     password = request.POST.get('password', '').strip()
     
@@ -44,7 +43,6 @@ def login_index(request):
 @csrf_exempt
 @require_POST
 def logout_index(request):
-    '''로그아웃 뷰'''
     if request.user.is_authenticated:
         logout(request)
         return JsonResponse({"ok": True, "redirect": "/"})
@@ -97,4 +95,68 @@ def signup(request):
     User.objects.create_user(email=email, password=password)
 
     return JsonResponse({"ok": True}, status=201)
+
+
+@csrf_exempt
+@require_POST
+def verify_current_password(request):
+    """현재 비밀번호 확인"""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "로그인이 필요합니다."}, status=401)
+    
+    current_password = request.POST.get("current_password", "").strip()
+
+    if not current_password:
+        return JsonResponse({"ok": False, "error": "현재 비밀번호를 입력해주세요."}, status=400)
+    
+    if request.user.check_password(current_password):
+        return JsonResponse({"ok": True})
+    else:
+        return JsonResponse({"ok": False, "error": "현재 비밀번호가 일치하지 않습니다."})
+    
+@csrf_exempt
+@require_POST
+def change_password(request):
+    """비밀번호 변경"""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "로그인이 필요합니다."}, status=401)
+    
+    current_password = request.POST.get("current_password", "").strip()
+    new_password = request.POST.get("new_password", "").strip()
+    
+    if not current_password or not new_password:
+        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
+    
+    
+    if not request.user.check_password(current_password):
+        return JsonResponse({"ok": False, "error": "현재 비밀번호가 일치하지 않습니다."})
+    
+    # 새 비밀번호로 변경
+    request.user.set_password(new_password)
+    request.user.save()
+    
+    logout(request)
+
+    return JsonResponse({"ok": True})
+
+@csrf_exempt
+@require_POST
+def change_password(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "로그인이 필요합니다."}, status=401)
+    
+    current_password = request.POST.get("current_password", "").strip()
+    new_password = request.POST.get("new_password", "").strip()
+    
+    if not current_password or not new_password:
+        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
+    
+    if not request.user.check_password(current_password):
+        return JsonResponse({"ok": False, "error": "현재 비밀번호가 일치하지 않습니다."})
+    
+    request.user.set_password(new_password)
+    request.user.save()
+    logout(request)
+    
+    return JsonResponse({"ok": True})
 
