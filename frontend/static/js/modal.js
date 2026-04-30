@@ -677,18 +677,43 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     if (signupCodeSendBtn) {
-        signupCodeSendBtn.addEventListener("click", function () {
-            hideSignupCodeMessages();
+        signupCodeSendBtn.addEventListener("click", async function () {
+            const email = signupEmailInput ? signupEmailInput.value.trim() : "";
 
-            if (signupCodeSendMessage) {
-                signupCodeSendMessage.classList.remove("hidden");
+            if (!isValidEmail(email)) {
+                showSignupEmailFormatError();
+                return;
             }
 
-            signupCodeSendBtn.textContent = "재전송";
-            startSignupCodeTimer();
+            hideSignupCodeMessages();
+
+            try {
+                const formData = new FormData();
+                formData.append('email', email);
+
+                const response = await fetch('/accounts/send-code/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    if (signupCodeSendMessage) {
+                        signupCodeSendMessage.classList.remove("hidden");
+                    }
+                    signupCodeSendBtn.textContent = "재전송";
+                    startSignupCodeTimer();
+                } else {
+                    alert(data.error || '인증코드 전송에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('인증코드 전송 에러:', error);
+                alert('인증코드 전송 중 오류가 발생했습니다.');
+            }
         });
     }
-
+    
     if (signupCodeInput) {
         signupCodeInput.addEventListener("input", function () {
             hideSignupCodeMessages();
