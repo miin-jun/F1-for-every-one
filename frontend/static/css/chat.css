@@ -1,3 +1,24 @@
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2') format('woff2');
+    font-weight: 800;
+    font-display: swap;
+}
+
 /* ==============================
    채팅 페이지 전용 스타일
 ============================== */
@@ -10,6 +31,7 @@ body {
     margin: 0;
     overflow: hidden;
     background-color: #000;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; 
 }
 
 .chat-page {
@@ -124,20 +146,26 @@ body {
     cursor: pointer;
 }
 
-.plus-circle {
+.plus-circle-svg {
     width: 22px;
     height: 22px;
+    
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.85);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.new-chat-btn:hover .plus-circle-svg {
+    stroke: #ffffff;
+}
 
-    border: 1px solid rgba(255, 255, 255, 0.85);
-    border-radius: 50%;
-
-    font-size: 17px;
-    line-height: 1;
-    padding-bottom: 2px;
+.chat-sidebar.collapsed .plus-circle-svg {
+    width: 22px;
+    height: 22px;
+    stroke: rgba(255, 255, 255, 0.9);
+    stroke-width: 1.5;
 }
 
 /* ==============================
@@ -149,6 +177,7 @@ body {
 }
 
 .history-header {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -160,10 +189,19 @@ body {
     color: #ffffff;
     font-size: 24px;
     font-weight: 500;
+    flex: 1; 
 }
 
-.history-delete-btn,
+.history-header::after {
+    content: '';
+    width: 50px; 
+}
+
 .history-more-btn {
+
+    position: absolute;
+    right: 0;
+
     width: 20px;
     height: 28px;
     padding: 0;
@@ -182,7 +220,28 @@ body {
 }
 
 .history-delete-btn {
-    transform: translateX(35px);
+    position: absolute;
+    right: 30px; 
+    
+    width: 20px;
+    height: 28px;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    background: transparent;
+    color: #ffffff;
+
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.history-delete-btn {
+    transform: translateX(0px); 
 }
 
 .history-delete-btn svg {
@@ -535,6 +594,8 @@ body {
     padding: 0;
 
     overflow: hidden;
+
+    max-width: 1400px;
 }
 
 .chat-intro {
@@ -558,6 +619,26 @@ body {
     font-size: 18px;
 }
 
+.chat-title-bar {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    width: 100%;
+    max-width: 1200px;
+    
+    padding: 0 42px;
+    margin: 0;
+}
+
+.chat-title-bar h2 {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 20px;
+    font-weight: 500;
+}
+
 /* ==============================
    채팅 메시지 영역
    - 스크롤은 여기에서만 발생
@@ -567,24 +648,44 @@ body {
 .chat-scroll-area {
     position: absolute;
 
-    top: 80px;
+    top: 60px;
     left: 0;
-    right: 0;
+    right: 0;  
     bottom: 155px;
 
-    padding: 0 42px 32px 42px;
-
+    padding: 0;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
+/* ==============================
+   스크롤바 스타일
+============================== */
+
+.chat-scroll-area::-webkit-scrollbar {
+    width: 8px;  
+}
+
+.chat-scroll-area::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);  
+    border-radius: 10px;
+}
+
+.chat-scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3); 
+    border-radius: 10px;
+}
+
+.chat-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5); 
+}
+
 .chat-message-area {
     width: 100%;
+    max-width: 1200px;  
+    margin: 0 auto; 
+    padding: 0 42px 32px 42px;
     min-height: 100%;
-
-    padding: 0;
-
-    overflow: visible;
 }
 
 .chat-message {
@@ -640,7 +741,7 @@ body {
 
 .chat-message-time {
     position: absolute;
-    bottom: -24px;
+    bottom: -5px;
 
     color: rgba(255, 255, 255, 0.78);
     font-size: 12px;
@@ -648,11 +749,11 @@ body {
 }
 
 .chat-message.user .chat-message-time {
-    left: -45px;
+    left: -40px;
 }
 
 .chat-message.bot .chat-message-time {
-    right: -45px;
+    right: -40px;
 }
 
 /* ==============================
@@ -662,11 +763,14 @@ body {
 .recommend-section {
     position: absolute;
 
-    left: 42px;
-    right: 42px;
-    bottom: 165px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    width: 100%;
+    max-width: 1200px;
+    bottom: 150px;
 
-    width: auto;
+    padding: 0 42px;
 }
 
 .recommend-section h3 {
@@ -713,12 +817,14 @@ body {
 .chat-input-area {
     position: absolute;
 
-    left: 42px;
-    right: 42px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    width: 100%;
+    max-width: 1200px;
     bottom: 34px;
 
-    width: auto;
-    padding: 0;
+    padding: 0 42px;
 
     z-index: 50;
 }
@@ -806,7 +912,7 @@ body {
 }
 
 .chat-notice {
-    margin: 24px 0 0;
+    margin: 12px 0 0;
 
     color: rgba(255, 255, 255, 0.42);
     font-size: 10px;
