@@ -34,6 +34,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const passwordChangeLink = document.getElementById("passwordChangeLink");
     const withdrawLink = document.getElementById("withdrawLink");
 
+    const passwordChangeModal = document.getElementById("passwordChangeModal");
+
+
+
     const recommendQuestions = [
         "2026년에 달라진 규정이 뭔가요?",
         "지금 시즌 1위 드라이버가 누구야?",
@@ -483,17 +487,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openPasswordChangeModal() {
-        const passwordChangeModal = document.getElementById("passwordChangeModal");
-
+        // 설정 패널 닫기
+        if (settingsPanel) {
+            settingsPanel.classList.add('hidden');
+        }
+        
+        // 비밀번호 변경 모달 열기
         if (passwordChangeModal) {
-            passwordChangeModal.classList.remove("hidden");
-            return;
-        }
-
-        if (passwordChangeLink && passwordChangeLink.dataset.url) {
-            window.location.href = passwordChangeLink.dataset.url;
-        }
+            passwordChangeModal.classList.remove('hidden');
     }
+}
 
     if (sidebarToggle && chatSidebar) {
         sidebarToggle.addEventListener("click", function () {
@@ -755,6 +758,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // if (passwordChangeLink) {
+    // passwordChangeLink.addEventListener('click', function() {
+    //     console.log('비밀번호 변경 버튼 클릭!');
+        
+    //     // 설정 패널 닫기
+    //     const settingsPanel = document.getElementById('settingsPanel');
+    //     if (settingsPanel) {
+    //         settingsPanel.classList.add('hidden');
+    //     }
+        
+    //     // 비밀번호 변경 모달 열기
+    //     if (passwordChangeModal) {
+    //         passwordChangeModal.classList.remove('hidden');
+    //     }
+    // });
+
     document.addEventListener("click", function (event) {
         const isSettingsArea =
             event.target.closest("#settingsBtn") ||
@@ -774,8 +793,254 @@ document.addEventListener("DOMContentLoaded", function () {
     clearChatScreen();
     updateTextCount();
 
+<<<<<<< HEAD
     const titleBar = document.querySelector('.chat-title-bar');
     if (titleBar) {
         titleBar.classList.add('hidden');
     }
 });
+=======
+
+    const modalCloses = document.querySelectorAll('.modal-close');
+    modalCloses.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+    const currentPasswordToggle = document.getElementById('currentPasswordToggle');
+    const currentPasswordDisplay = document.getElementById('currentPasswordDisplay');
+
+    const newPasswordToggle = document.getElementById('newPasswordToggle');
+    const newPasswordDisplay = document.getElementById('newPasswordDisplay');
+
+    const newPasswordCheckToggle = document.getElementById('newPasswordCheckToggle');
+    const newPasswordCheckDisplay = document.getElementById('newPasswordCheckDisplay');
+
+    // 현재 비밀번호 눈 아이콘
+    if (currentPasswordToggle && currentPasswordDisplay) {
+        currentPasswordToggle.addEventListener('click', function() {
+            if (currentPasswordDisplay.type === 'password') {
+                currentPasswordDisplay.type = 'text';
+            } else {
+                currentPasswordDisplay.type = 'password';
+            }
+            
+            const eyeOff = this.querySelector('.reset-eye-off');
+            const eyeOpen = this.querySelector('.reset-eye-open');
+            
+            if (eyeOff && eyeOpen) {
+                eyeOff.classList.toggle('active');
+                eyeOpen.classList.toggle('active');
+            }
+        });
+    }
+
+    // 새 비밀번호 눈 아이콘
+    if (newPasswordToggle && newPasswordDisplay) {
+        newPasswordToggle.addEventListener('click', function() {
+            if (newPasswordDisplay.type === 'password') {
+                newPasswordDisplay.type = 'text';
+            } else {
+                newPasswordDisplay.type = 'password';
+            }
+            
+            const eyeOff = this.querySelector('.reset-eye-off');
+            const eyeOpen = this.querySelector('.reset-eye-open');
+            
+            if (eyeOff && eyeOpen) {
+                eyeOff.classList.toggle('active');
+                eyeOpen.classList.toggle('active');
+            }
+        });
+    }
+
+    // 새 비밀번호 확인 눈 아이콘
+    if (newPasswordCheckToggle && newPasswordCheckDisplay) {
+        newPasswordCheckToggle.addEventListener('click', function() {
+            if (newPasswordCheckDisplay.type === 'password') {
+                newPasswordCheckDisplay.type = 'text';
+            } else {
+                newPasswordCheckDisplay.type = 'password';
+            }
+            
+            const eyeOff = this.querySelector('.reset-eye-off');
+            const eyeOpen = this.querySelector('.reset-eye-open');
+            
+            if (eyeOff && eyeOpen) {
+                eyeOff.classList.toggle('active');
+                eyeOpen.classList.toggle('active');
+            }
+        });
+    }
+
+
+    // 비밀번호 변경 모달 - 현재 비밀번호 확인
+    const verifyCurrentPasswordBtn = document.getElementById('verifyCurrentPasswordBtn');
+    const currentPasswordError = document.getElementById('currentPasswordError');
+    const newPasswordSection = document.getElementById('newPasswordSection');
+
+    if (verifyCurrentPasswordBtn) {
+        verifyCurrentPasswordBtn.addEventListener('click', function() {
+            const currentPassword = document.getElementById('currentPasswordDisplay').value.trim();
+            
+            if (!currentPassword) {
+                if (currentPasswordError) {
+                    currentPasswordError.textContent = '× 현재 비밀번호를 입력해주세요.';
+                    currentPasswordError.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            // CSRF 토큰 가져오기
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                             document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            
+            // 백엔드 API 호출
+            fetch('/accounts/verify-current-password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin',
+                body: new URLSearchParams({
+                    'current_password': currentPassword
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status); // 디버깅용
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data); // 디버깅용
+                
+                if (data.ok) {
+                    // 성공
+                    if (currentPasswordError) {
+                        currentPasswordError.classList.add('hidden');
+                    }
+                    if (newPasswordSection) {
+                        newPasswordSection.style.display = 'block';
+                    }
+                    verifyCurrentPasswordBtn.style.display = 'none';
+                } else {
+                    // 실패
+                    if (currentPasswordError) {
+                        currentPasswordError.textContent = '× 비밀번호가 일치하지 않습니다.';
+                        currentPasswordError.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error); // 디버깅용
+                if (currentPasswordError) {
+                    currentPasswordError.textContent = '× 오류가 발생했습니다. 다시 시도해주세요.';
+                    currentPasswordError.classList.remove('hidden');
+                }
+            });
+        });
+    }
+
+    // 비밀번호 변경 모달 - 새 비밀번호 변경
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const newPasswordRuleMessage = document.getElementById('newPasswordRuleMessage');
+    const newPasswordMatchError = document.getElementById('newPasswordMatchError');
+
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', function() {
+            const currentPassword = document.getElementById('currentPasswordDisplay').value.trim();
+            const newPassword = document.getElementById('newPasswordDisplay').value.trim();
+            const newPasswordCheck = document.getElementById('newPasswordCheckDisplay').value.trim();
+            
+            // 입력 확인
+            if (!newPassword || !newPasswordCheck) {
+                if (newPasswordRuleMessage) {
+                    newPasswordRuleMessage.textContent = '× 모든 항목을 입력해주세요.';
+                    newPasswordRuleMessage.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            // 비밀번호 규칙 검증 (10-16자, 대소문자+숫자 필수)
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{10,16}$/;
+            if (!passwordRegex.test(newPassword)) {
+                if (newPasswordRuleMessage) {
+                    newPasswordRuleMessage.textContent = '× 10자~16자 / 영문 대소문자, 숫자 필수 포함 / 공백 미포함';
+                    newPasswordRuleMessage.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            // 비밀번호 일치 확인
+            if (newPassword !== newPasswordCheck) {
+                if (newPasswordMatchError) {
+                    newPasswordMatchError.textContent = '× 비밀번호가 일치하지 않습니다.';
+                    newPasswordMatchError.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            // 에러 메시지 숨기기
+            if (newPasswordRuleMessage) {
+                newPasswordRuleMessage.classList.add('hidden');
+            }
+            if (newPasswordMatchError) {
+                newPasswordMatchError.classList.add('hidden');
+            }
+            
+            // CSRF 토큰 가져오기
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                             document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            
+            // 백엔드 API 호출
+            fetch('/accounts/change-password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                credentials: 'same-origin',
+                body: new URLSearchParams({
+                    'current_password': currentPassword,
+                    'new_password': newPassword
+                })
+            })
+            .then(response => {
+                console.log('비밀번호 변경 응답:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('비밀번호 변경 결과:', data);
+                
+                if (data.ok) {
+                    // 성공: 모달 닫고 알림 표시
+                    if (passwordChangeModal) {
+                        passwordChangeModal.classList.add('hidden');
+                    }
+                    
+                    alert('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+                    
+                    // 로그인 페이지로 이동
+                    window.location.href = '/';
+                } else {
+                    // 실패: 에러 메시지 표시
+                    if (newPasswordRuleMessage) {
+                        newPasswordRuleMessage.textContent = '× ' + (data.error || '비밀번호 변경에 실패했습니다.');
+                        newPasswordRuleMessage.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (newPasswordRuleMessage) {
+                    newPasswordRuleMessage.textContent = '× 오류가 발생했습니다. 다시 시도해주세요.';
+                    newPasswordRuleMessage.classList.remove('hidden');
+                }
+            });
+        });
+    }
+}); 
+>>>>>>> ed217cb9e1f38f2e874c6696c1b8f19ab9a5244d
