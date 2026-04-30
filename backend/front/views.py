@@ -6,8 +6,8 @@ def index(request):
     return render(request, "start/index.html")
 
 
-def chat_main(request):
-    return render(request, "chat/chat_main.html")
+# def chat_main(request):
+#     return render(request, "chat/chat_main.html")
 
 
 def chat_text_voice(request):

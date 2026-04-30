@@ -21,11 +21,19 @@ def login_index(request):
     email = request.POST.get('email', '').strip()
     password = request.POST.get('password', '').strip()
     
+    print(f"=== 로그인 시도 ===")
+    print(f"Email: '{email}'")
+    print(f"Password: '{password}'")
+    print(f"Email length: {len(email)}")
+    print(f"Password length: {len(password)}")
+    
     if not email or not password:
         return JsonResponse({"ok": False, "error": "이메일과 비밀번호를 입력해주세요."}, status=400)
     
     user = authenticate(request, username=email, password=password)
     
+    print(f"User: {user}")
+
     if user is not None:
         login(request, user)
         return JsonResponse({"ok": True, "redirect": "/chat/"}) 

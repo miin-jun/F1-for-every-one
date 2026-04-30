@@ -287,58 +287,123 @@ document.addEventListener("DOMContentLoaded", function () {
         updateTextCount();
     }
 
-    function sendCurrentMessage() {
+    // function sendCurrentMessage() {
+    //     if (!chatInput) return;
+
+    //     const message = chatInput.value.trim();
+
+    //     if (message === "") {
+    //         return;
+    //     }
+
+    //     let chatId = activeChatId;
+
+    //     if (!chatId || !chatStore[chatId]) {
+    //         chatId = makeChatId();
+
+    //         chatStore[chatId] = {
+    //             title: makeShortTitle(message),
+    //             messages: []
+    //         };
+
+    //         chatOrder.unshift(chatId);
+    //         activeChatId = chatId;
+    //     }
+
+    //     chatStore[chatId].messages.push({
+    //         type: "user",
+    //         text: message
+    //     });
+
+    //     if (!chatStore[chatId].title || chatStore[chatId].title === "새 채팅") {
+    //         chatStore[chatId].title = makeShortTitle(message);
+    //     }
+
+    //     chatInput.value = "";
+    //     updateTextCount();
+
+    //     renderHistory();
+    //     renderMessages(chatId);
+
+    //     setTimeout(function () {
+    //         if (!chatStore[chatId]) return;
+
+    //         chatStore[chatId].messages.push({
+    //             type: "bot",
+    //             text: "질문을 확인했어요. 실제 답변 연결 전까지는 화면 테스트용 응답입니다."
+    //         });
+
+    //         if (activeChatId === chatId) {
+    //             renderMessages(chatId);
+    //         }
+    //     }, 350);
+    // }
+
+
+    async function sendCurrentMessage() {
         if (!chatInput) return;
 
         const message = chatInput.value.trim();
-
-        if (message === "") {
-            return;
-        }
+        if (message === "") return;
 
         let chatId = activeChatId;
 
-        if (!chatId || !chatStore[chatId]) {
-            chatId = makeChatId();
+        // 백엔드로 전송
+        try {
+            const formData = new URLSearchParams();
+            formData.append('content', message);
+            if (chatId && chatStore[chatId] && chatStore[chatId].backendChatId) {
+                formData.append('chat_id', chatStore[chatId].backendChatId);
+            }
 
-            chatStore[chatId] = {
-                title: makeShortTitle(message),
-                messages: []
-            };
-
-            chatOrder.unshift(chatId);
-            activeChatId = chatId;
-        }
-
-        chatStore[chatId].messages.push({
-            type: "user",
-            text: message
-        });
-
-        if (!chatStore[chatId].title || chatStore[chatId].title === "새 채팅") {
-            chatStore[chatId].title = makeShortTitle(message);
-        }
-
-        chatInput.value = "";
-        updateTextCount();
-
-        renderHistory();
-        renderMessages(chatId);
-
-        setTimeout(function () {
-            if (!chatStore[chatId]) return;
-
-            chatStore[chatId].messages.push({
-                type: "bot",
-                text: "질문을 확인했어요. 실제 답변 연결 전까지는 화면 테스트용 응답입니다."
+            const response = await fetch('/chat/api/message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
             });
 
-            if (activeChatId === chatId) {
-                renderMessages(chatId);
-            }
-        }, 350);
-    }
+            const data = await response.json();
 
+            if (data.ok) {
+                // 새 채팅방이면 로컬 chatStore 생성
+                if (!chatId || !chatStore[chatId]) {
+                    chatId = makeChatId();
+                    chatStore[chatId] = {
+                        title: data.chat_title,
+                        messages: [],
+                        backendChatId: data.chat_id  // 서버 chat_id 저장
+                    };
+                    chatOrder.unshift(chatId);
+                    activeChatId = chatId;
+                }
+
+                // 메시지 추가
+                chatStore[chatId].messages.push({
+                    type: "user",
+                    text: data.user_message.content
+                });
+
+                chatStore[chatId].messages.push({
+                    type: "bot",
+                    text: data.assistant_message.content
+                });
+
+                chatInput.value = "";
+                updateTextCount();
+
+                renderHistory();
+                renderMessages(chatId);
+            } else {
+                alert(data.error || '메시지 전송 실패');
+            }
+        } catch (error) {
+            console.error('메시지 전송 오류:', error);
+            alert('메시지 전송 중 오류가 발생했습니다.');
+        }
+    }
+    
     function seedInitialHistory() {
         if (!historyList) return;
 
