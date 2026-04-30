@@ -18,8 +18,14 @@ def withdraw(request):
     return render(request, "withdraw/withdraw.html")
 
 
+def withdraw_confirm(request):
+    return render(request, "withdraw/withdraw_confirm.html")
+
+
 def withdraw_done(request):
+    logout(request)
     return render(request, "withdraw/withdraw_done.html")
+
 
 def logout_view(request):
     logout(request)
