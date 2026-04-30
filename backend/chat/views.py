@@ -1,3 +1,7 @@
+import openai
+from gtts import gTTS
+import io
+import os
 import json
 
 from django.utils import timezone
@@ -6,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from .models import Chat, ChatLog
 
 
@@ -154,3 +159,71 @@ def get_chat_messages(request, chat_id):
         'chat_title': chat.chat_title,
         'messages': messages_list,
     })
+
+
+@login_required
+def chat_detail(request, chat_id):
+    try:
+        chat = Chat.objects.get(chat_id=chat_id, user=request.user)
+    except Chat.DoesNotExist:
+        return render(request, '404.html', status=404)
+
+    return render(request, 'chat/chat_main.html', {
+        'initial_chat_id': chat.chat_id,
+    })
+
+@require_http_methods(["POST"])
+def transcribe_audio(request):
+    """STT - OpenAI Whisper API"""
+    try:
+        audio_file = request.FILES.get('audio')
+        if not audio_file:
+            return JsonResponse({'ok': False, 'error': '오디오 파일이 없습니다.'})
+        
+        # OpenAI Whisper API 호출
+        client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # 파일 객체로 전송
+        transcription = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+            language="ko"
+        )
+        
+        return JsonResponse({
+            'ok': True,
+            'text': transcription.text
+        })
+        
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@require_http_methods(["POST"])
+def text_to_speech(request):
+    """TTS - gTTS"""
+    try:
+        import json
+        data = json.loads(request.body)
+        text = data.get('text', '')
+        
+        if not text:
+            return JsonResponse({'ok': False, 'error': '텍스트가 없습니다.'})
+        
+        # gTTS로 음성 생성
+        tts = gTTS(text=text, lang='ko')
+        
+        # 메모리에 저장
+        audio_buffer = io.BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+        
+        # MP3 파일로 응답
+        from django.http import HttpResponse
+        response = HttpResponse(audio_buffer.read(), content_type='audio/mpeg')
+        response['Content-Disposition'] = 'inline; filename="speech.mp3"'
+        
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
