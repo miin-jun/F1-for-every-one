@@ -58,8 +58,15 @@ def check_email(request):
 @require_POST
 def send_code(request):
     email = request.POST.get("email", "").strip()
+    purpose = request.POST.get("purpose", "signup")  # signup 또는 reset
+
     if not email:
         return JsonResponse({"ok": False, "error": "이메일을 입력해주세요."}, status=400)
+
+    # 비밀번호 찾기일 때만 가입 여부 확인
+    if purpose == "reset":
+        if not User.objects.filter(email=email).exists():
+            return JsonResponse({"ok": False, "error": "가입되지 않은 이메일입니다."})
 
     code = "".join(random.choices(string.digits, k=6))
     cache.set(_get_cache_key(email), code, timeout=180)
