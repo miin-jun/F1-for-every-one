@@ -8,6 +8,8 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 
 from .models import User
 
@@ -20,19 +22,11 @@ def login_index(request):
     email = request.POST.get('email', '').strip()
     password = request.POST.get('password', '').strip()
     
-    print(f"=== 로그인 시도 ===")
-    print(f"Email: '{email}'")
-    print(f"Password: '{password}'")
-    print(f"Email length: {len(email)}")
-    print(f"Password length: {len(password)}")
-    
     if not email or not password:
         return JsonResponse({"ok": False, "error": "이메일과 비밀번호를 입력해주세요."}, status=400)
     
     user = authenticate(request, username=email, password=password)
     
-    print(f"User: {user}")
-
     if user is not None:
         login(request, user)
         return JsonResponse({"ok": True, "redirect": "/chat/"}) 
@@ -139,24 +133,36 @@ def change_password(request):
 
     return JsonResponse({"ok": True})
 
-@csrf_exempt
-@require_POST
-def change_password(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({"ok": False, "error": "로그인이 필요합니다."}, status=401)
-    
-    current_password = request.POST.get("current_password", "").strip()
-    new_password = request.POST.get("new_password", "").strip()
-    
-    if not current_password or not new_password:
-        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
-    
-    if not request.user.check_password(current_password):
-        return JsonResponse({"ok": False, "error": "현재 비밀번호가 일치하지 않습니다."})
-    
-    request.user.set_password(new_password)
-    request.user.save()
-    logout(request)
-    
-    return JsonResponse({"ok": True})
 
+@login_required
+def withdraw(request):
+    if request.method == "GET":
+        return render(request, "withdraw/withdraw.html")
+
+    password = request.POST.get("password")
+
+    if not request.user.check_password(password):
+        return render(request, "withdraw/withdraw.html", {"error": "비밀번호가 일치하지 않습니다."})
+
+    # 비밀번호 확인 완료 → 세션에 저장 후 확인 페이지로 이동
+    request.session['withdraw_verified'] = True
+    return redirect("accounts:withdraw_confirm")
+
+
+@login_required
+def withdraw_confirm(request):
+    # 비밀번호 인증 없이 직접 접근 차단
+    if not request.session.get('withdraw_verified'):
+        return redirect("accounts:withdraw")
+
+    if request.method == "POST":
+        request.session.pop('withdraw_verified', None)
+        request.user.delete()
+        logout(request)
+        return redirect("accounts:withdraw_done")
+
+    return render(request, "withdraw/withdraw_confirm.html")
+
+
+def withdraw_done(request):
+    return render(request, "withdraw/withdraw_done.html")

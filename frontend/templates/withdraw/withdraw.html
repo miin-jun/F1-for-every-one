@@ -1,1 +1,26 @@
-{% comment %} 회원 탈퇴 확인 페이지 -> 회원 탈퇴 하시겠습니까? yes or no 하는 페이지 {% endcomment %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/withdraw.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="withdraw-container">
+        <h2>회원 탈퇴</h2>
+        <p>회원탈퇴 인증을 위해 현재 비밀번호를 입력해주세요.</p>
+
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:withdraw' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="password">현재 비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="현재 비밀번호를 입력해주세요." required>
+            </div>
+            <button type="submit" class="next-btn">다음</button>
+        </form>
+    </div>
+{% endblock %}
