@@ -79,22 +79,14 @@ def send_code(request):
 def signup(request):
     email = request.POST.get("email", "").strip()
     password = request.POST.get("password", "").strip()
-    code = request.POST.get("code", "").strip()
 
-    if not email or not password or not code:
-        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
-
-    saved_code = cache.get(_get_cache_key(email))
-    if saved_code is None:
-        return JsonResponse({"ok": False, "error": "expired"})
-    if saved_code != code:
-        return JsonResponse({"ok": False, "error": "invalid_code"})
+    if not email or not password:
+        return JsonResponse({"ok": False, "error": "이메일과 비밀번호를 입력해주세요."}, status=400)
 
     if User.objects.filter(email=email).exists():
-        return JsonResponse({"ok": False, "error": "duplicate"})
+        return JsonResponse({"ok": False, "error": "이미 가입된 이메일입니다."})
 
     User.objects.create_user(email=email, password=password)
-    cache.delete(_get_cache_key(email))
 
     return JsonResponse({"ok": True}, status=201)
 

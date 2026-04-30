@@ -1,17 +1,4 @@
-<<<<<<< HEAD
-{% comment %} 메인 채팅 페이지
- 추천질문 있는 그 페이지 {% endcomment %}
 
-<!-- 데모 확인용-->
- <!DOCTYPE html>
-<html>
-<body>
-    <h1>챗봇 페이지</h1>
-    <p>{{ request.user.email }}님 환영합니다!</p>
-    <a href="{% url 'logout' %}">로그아웃</a>
-</body>
-</html>
-=======
 {% extends "base.html" %}
 {% load static %}
 
@@ -238,4 +225,3 @@
 {% block extra_js %}
 <script src="{% static 'js/chat.js' %}"></script>
 {% endblock %}
->>>>>>> 6eabe124f2ea5071e9afb14614f54416ef8c0deb
