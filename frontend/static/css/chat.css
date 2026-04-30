@@ -870,8 +870,8 @@ body {
 
 .mic-btn,
 .send-btn {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     padding: 0;
 
     display: flex;
@@ -889,8 +889,8 @@ body {
 
 .mic-btn svg,
 .send-btn svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
 
     fill: none;
     stroke: #111111;
@@ -907,8 +907,8 @@ body {
 }
 
 .send-btn svg {
-    width: 27px;
-    height: 27px;
+    width: 23px;
+    height: 23px;
 }
 
 .chat-notice {
@@ -918,6 +918,112 @@ body {
     font-size: 10px;
     text-align: center;
     line-height: 1.5;
+}
+
+/* ==============================
+   음성 입력 모달
+============================== */
+.voice-recording-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.voice-recording-overlay.hidden {
+    display: none;
+}
+
+.voice-recording-area {
+    position: absolute;
+    left: 50%;
+    bottom: 110px;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+
+    width: auto;
+    pointer-events: auto;
+}
+
+.voice-circle-animation {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-mic-center {
+    position: relative;
+    z-index: 5;
+    width: 76px;
+    height: 76px;
+    padding: 0;
+    border: 2px solid rgba(255,255,255,0.78);
+    border-radius: 50%;
+    background: rgba(24, 22, 22, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.voice-mic-center svg {
+    width: 34px;
+    height: 34px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.voice-timer {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+}
+
+.voice-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    max-width: 240px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(20,20,20,0.55);
+    backdrop-filter: blur(6px);
+}
+
+.voice-error.hidden {
+    display: none;
+}
+
+.voice-error-text {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.92);
+    text-align: center;
+}
+
+.voice-back-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: rgba(255,255,255,0.95);
+    color: #111;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* ==============================
