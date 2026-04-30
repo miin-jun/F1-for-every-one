@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv  
 
 load_dotenv()  
-import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,8 +76,6 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "../frontend/static"]
-
-
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
