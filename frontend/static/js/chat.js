@@ -1,3 +1,8 @@
+let chatStore = {};
+let chatOrder = [];
+let activeChatId = null;
+let chatSeq = 0;
+
 document.addEventListener("DOMContentLoaded", function () {
     const chatSidebar = document.getElementById("chatSidebar");
     const sidebarToggle = document.getElementById("sidebarToggle");
@@ -30,8 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const passwordChangeModal = document.getElementById("passwordChangeModal");
 
-
-
     const recommendQuestions = [
         "2026년에 달라진 규정이 뭔가요?",
         "지금 시즌 1위 드라이버가 누구야?",
@@ -46,14 +49,78 @@ document.addEventListener("DOMContentLoaded", function () {
         "파워유닛 교체 페널티는 어떻게 적용돼?"
     ];
 
-    let chatStore = {};
-    let chatOrder = [];
-    let activeChatId = null;
-    let chatSeq = 0;
-
     function makeChatId() {
         chatSeq += 1;
         return `chat-${chatSeq}`;
+    }
+
+    async function loadChatHistory() {
+        try {
+            const response = await fetch('/chat/api/list/');
+            const data = await response.json();
+            
+            if (data.ok && data.chats.length > 0) {
+                data.chats.forEach(function(chat) {
+                    const chatId = makeChatId();
+                    chatStore[chatId] = {
+                        title: chat.chat_title,
+                        messages: [],
+                        backendChatId: chat.chat_id
+                    };
+                    chatOrder.push(chatId);
+                });
+                
+                renderHistory();
+            }
+        } catch (error) {
+            console.error('히스토리 로드 오류:', error);
+        }
+    }
+
+    async function openChat(chatId) {
+        if (!chatStore[chatId]) 
+            return;
+
+        activeChatId = chatId;
+        
+        const titleBar = document.querySelector('.chat-title-bar');
+        const titleElement = document.getElementById('currentChatTitle');
+        
+        if (titleBar) {
+            titleBar.classList.remove('hidden');
+        }
+        
+        if (titleElement && chatStore[chatId]) {
+            titleElement.textContent = chatStore[chatId].title;
+        }
+        
+        // 메시지가 없으면 DB에서 로드
+        if (chatStore[chatId].messages.length === 0 && chatStore[chatId].backendChatId) {
+            try {
+                const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    chatStore[chatId].messages = data.messages.map(function(msg) {
+                        return {
+                            type: msg.role === 'user' ? 'user' : 'bot',
+                            text: msg.content
+                        };
+                    });
+                }
+            } catch (error) {
+                console.error('메시지 로드 오류:', error);
+            }
+        }
+        
+        renderHistory();
+        renderMessages(chatId);
+
+        if (chatInput) {
+            chatInput.value = "";
+        }
+
+        updateTextCount();
     }
 
     function makeShortTitle(text) {
@@ -220,22 +287,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function openChat(chatId) {
-        if (!chatStore[chatId]) return;
-
-        activeChatId = chatId;
-        renderHistory();
-        renderMessages(chatId);
-
-        if (chatInput) {
-            chatInput.value = "";
-        }
-
-        updateTextCount();
-    }
-
     function createNewChat() {
         activeChatId = null;
+
+        const titleBar = document.querySelector('.chat-title-bar');
+        if (titleBar) {
+            titleBar.classList.add('hidden');
+        }
 
         clearChatScreen();
 
@@ -253,96 +311,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function createChatFromQuestion(question) {
-        const chatId = makeChatId();
-
-        chatStore[chatId] = {
-            title: makeShortTitle(question),
-            messages: [
-                {
-                    type: "user",
-                    text: question
-                }
-            ]
-        };
-
-        chatOrder.unshift(chatId);
-        activeChatId = chatId;
-
-        renderHistory();
-        renderMessages(chatId);
-
-        setTimeout(function () {
-            if (!chatStore[chatId]) return;
-
-            chatStore[chatId].messages.push({
-                type: "bot",
-                text: "질문을 확인했어요. 현재는 화면 테스트용 응답입니다.\n\n실제 답변은 추후 백엔드 연결 후 F1 규정과 데이터에 기반해 제공될 예정입니다."
-            });
-
-            if (activeChatId === chatId) {
-                renderMessages(chatId);
-            }
-        }, 350);
-
+        // 입력창에 질문하기
         if (chatInput) {
-            chatInput.value = "";
+            chatInput.value = question;
+            updateTextCount();
         }
-
-        updateTextCount();
+        
+        // 백엔드 호출
+        sendCurrentMessage();
     }
-
-    // function sendCurrentMessage() {
-    //     if (!chatInput) return;
-
-    //     const message = chatInput.value.trim();
-
-    //     if (message === "") {
-    //         return;
-    //     }
-
-    //     let chatId = activeChatId;
-
-    //     if (!chatId || !chatStore[chatId]) {
-    //         chatId = makeChatId();
-
-    //         chatStore[chatId] = {
-    //             title: makeShortTitle(message),
-    //             messages: []
-    //         };
-
-    //         chatOrder.unshift(chatId);
-    //         activeChatId = chatId;
-    //     }
-
-    //     chatStore[chatId].messages.push({
-    //         type: "user",
-    //         text: message
-    //     });
-
-    //     if (!chatStore[chatId].title || chatStore[chatId].title === "새 채팅") {
-    //         chatStore[chatId].title = makeShortTitle(message);
-    //     }
-
-    //     chatInput.value = "";
-    //     updateTextCount();
-
-    //     renderHistory();
-    //     renderMessages(chatId);
-
-    //     setTimeout(function () {
-    //         if (!chatStore[chatId]) return;
-
-    //         chatStore[chatId].messages.push({
-    //             type: "bot",
-    //             text: "질문을 확인했어요. 실제 답변 연결 전까지는 화면 테스트용 응답입니다."
-    //         });
-
-    //         if (activeChatId === chatId) {
-    //             renderMessages(chatId);
-    //         }
-    //     }, 350);
-    // }
-
 
     async function sendCurrentMessage() {
         if (!chatInput) return;
@@ -377,13 +354,34 @@ document.addEventListener("DOMContentLoaded", function () {
                     chatStore[chatId] = {
                         title: data.chat_title,
                         messages: [],
-                        backendChatId: data.chat_id  // 서버 chat_id 저장
+                        backendChatId: data.chat_id
                     };
                     chatOrder.unshift(chatId);
                     activeChatId = chatId;
+
+                    const titleBar = document.querySelector('.chat-title-bar');
+                    const titleElement = document.getElementById('currentChatTitle')
+                    
+                    if (titleBar) {
+                        titleBar.classList.remove('hidden');
+                    }
+
+                    if (titleElement) {
+                        titleElement.textContent = data.chat_title;
+                    }
+                } else {
+                    // backendChatId 업데이트
+                    if (!chatStore[chatId].backendChatId) {
+                        chatStore[chatId].backendChatId = data.chat_id;
+                    }
+                    
+                    const titleBar = document.querySelector('.chat-title-bar');
+                    if (titleBar) {
+                        titleBar.classList.remove('hidden');
+                    }
                 }
 
-                // 메시지 추가
+                // 채팅 기록 추가
                 chatStore[chatId].messages.push({
                     type: "user",
                     text: data.user_message.content
@@ -406,42 +404,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('메시지 전송 오류:', error);
             alert('메시지 전송 중 오류가 발생했습니다.');
         }
-    }
-    
-    function seedInitialHistory() {
-        if (!historyList) return;
-
-        const initialTitles = [];
-
-        historyList.querySelectorAll(".history-title").forEach(function (button) {
-            const title = button.textContent.trim();
-
-            if (title && title !== "대화 기록이 없습니다.") {
-                initialTitles.push(title);
-            }
-        });
-
-        initialTitles.forEach(function (title) {
-            const chatId = makeChatId();
-
-            chatStore[chatId] = {
-                title: title,
-                messages: [
-                    {
-                        type: "user",
-                        text: title
-                    },
-                    {
-                        type: "bot",
-                        text: "이전 대화 예시입니다. 실제 저장 대화는 백엔드 연결 후 불러올 수 있습니다."
-                    }
-                ]
-            };
-
-            chatOrder.push(chatId);
-        });
-
-        renderHistory();
     }
 
     function renderRandomRecommendations() {
@@ -506,28 +468,63 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (historyDeleteBtn && historyList) {
-        historyDeleteBtn.addEventListener("click", function () {
+        historyDeleteBtn.addEventListener("click", async function () {
             const checkedItems = historyList.querySelectorAll(".history-check:checked");
-            const deletedChatIds = [];
+            const backendChatIds = [];
+            const localChatIds = [];
 
             checkedItems.forEach(function (checkbox) {
                 const item = checkbox.closest("li");
-
                 if (!item) return;
 
                 const chatId = item.dataset.chatId;
+                if (!chatId) return;
 
-                if (chatId) {
-                    deletedChatIds.push(chatId);
-                    delete chatStore[chatId];
+                localChatIds.push(chatId);
+
+                // 백엔드 chat_id가 있으면 수집
+                if (chatStore[chatId] && chatStore[chatId].backendChatId) {
+                    backendChatIds.push(chatStore[chatId].backendChatId);
                 }
             });
 
-            chatOrder = chatOrder.filter(function (chatId) {
-                return !deletedChatIds.includes(chatId);
+            if (localChatIds.length === 0) {
+                return;
+            }
+
+            // 백엔드에서 삭제
+            if (backendChatIds.length > 0) {
+                try {
+                    const response = await fetch('/chat/api/delete/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ chat_ids: backendChatIds })
+                    });
+
+                    const data = await response.json();
+                    if (!data.ok) {
+                        alert(data.error || '삭제 실패');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('삭제 오류:', error);
+                    alert('삭제 중 오류가 발생했습니다.');
+                    return;
+                }
+            }
+
+            // 로컬 삭제
+            localChatIds.forEach(function (chatId) {
+                delete chatStore[chatId];
             });
 
-            if (deletedChatIds.includes(activeChatId)) {
+            chatOrder = chatOrder.filter(function (chatId) {
+                return !localChatIds.includes(chatId);
+            });
+
+            if (localChatIds.includes(activeChatId)) {
                 activeChatId = null;
                 clearChatScreen();
             }
@@ -537,7 +534,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             renderHistory();
         });
-    }
+    }    
 
     if (chatInput) {
         chatInput.addEventListener("input", updateTextCount);
@@ -606,7 +603,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-
+    
+    
     if (settingsBtn) {
         settingsBtn.addEventListener("click", function (event) {
             event.preventDefault();
@@ -675,22 +673,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // if (passwordChangeLink) {
-    // passwordChangeLink.addEventListener('click', function() {
-    //     console.log('비밀번호 변경 버튼 클릭!');
-        
-    //     // 설정 패널 닫기
-    //     const settingsPanel = document.getElementById('settingsPanel');
-    //     if (settingsPanel) {
-    //         settingsPanel.classList.add('hidden');
-    //     }
-        
-    //     // 비밀번호 변경 모달 열기
-    //     if (passwordChangeModal) {
-    //         passwordChangeModal.classList.remove('hidden');
-    //     }
-    // });
-
     document.addEventListener("click", function (event) {
         const isSettingsArea =
             event.target.closest("#settingsBtn") ||
@@ -705,10 +687,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    seedInitialHistory();
+    // seedInitialHistory();
+    loadChatHistory();
     clearChatScreen();
     updateTextCount();
 
+    const titleBar = document.querySelector('.chat-title-bar');
+    if (titleBar) {
+        titleBar.classList.add('hidden');
+    }
 
     const modalCloses = document.querySelectorAll('.modal-close');
     modalCloses.forEach(function(btn) {

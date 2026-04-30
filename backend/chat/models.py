@@ -24,7 +24,6 @@ class Chat(models.Model):
     
 class ChatLog(models.Model):
     '''상세 채팅'''
-
     ROLE_CHOICES = [
         ('user', '사용자'),
         ('system', '시스템')
