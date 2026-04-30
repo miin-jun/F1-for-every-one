@@ -1,5 +1,6 @@
 import json
 
+from django.utils import timezone
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -28,6 +29,7 @@ def create_message(request):
     if chat_id:
         try:
             chat = Chat.objects.get(chat_id=chat_id, user=request.user)
+
         except Chat.DoesNotExist:
             return JsonResponse({"ok": False, "error": "채팅방을 찾을 수 없습니다."}, status=404)
     else:
@@ -35,14 +37,14 @@ def create_message(request):
         title = content[:30]
         chat = Chat.objects.create(
             user=request.user,
-            chat_title=title
+            chat_title=title,
         )
     
     # 사용자 채팅 저장
     user_message = ChatLog.objects.create(
         chat=chat,
         role='user',
-        content=content
+        content=content,
     )
     
     # 응답 생성
@@ -51,8 +53,11 @@ def create_message(request):
     assistant_message = ChatLog.objects.create(
         chat=chat,
         role='system',
-        content=assistant_content
+        content=assistant_content,
     )
+
+    chat.updated_at = timezone.now()
+    chat.save(update_fields=['updated_at'])
     
     return JsonResponse({
         "ok": True,
@@ -61,12 +66,12 @@ def create_message(request):
         "user_message": {
             "message_id": user_message.message_id,
             "content": user_message.content,
-            "created_at": user_message.created_at.isoformat()
+            "created_at": user_message.created_at.isoformat(),
         },
         "assistant_message": {
             "message_id": assistant_message.message_id,
             "content": assistant_message.content,
-            "created_at": assistant_message.created_at.isoformat()
+            "created_at": assistant_message.created_at.isoformat(),
         }
     })
 
@@ -91,7 +96,61 @@ def delete_chats(request):
         
         return JsonResponse({
             "ok": True,
-            "deleted_count": deleted_count
+            "deleted_count": deleted_count,
         })
+    
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)
+    
+
+@login_required
+def get_chats(request):
+    '''채팅 목록 조회'''
+    chats = Chat.objects.filter(user=request.user).order_by('-updated_at')
+
+    chat_list = []
+
+    for chat in chats:
+        chat_list.append({
+            'chat_id': chat.chat_id,
+            'chat_title': chat.chat_title,
+            'created_at': chat.created_at.isoformat(),
+            'updated_at': chat.updated_at.isoformat(),
+        })
+    
+    return JsonResponse({
+        'ok': True,
+        'chats': chat_list,
+    })
+
+
+@login_required
+def get_chat_messages(request, chat_id):
+    '''상세 채팅 조회'''
+    try:
+        chat = Chat.objects.get(chat_id=chat_id, user=request.user)
+
+    except Chat.DoesNotExist:
+        return JsonResponse({
+            'ok': False,
+            'error': '채팅방을 찾을 수 없습니다.'
+        })
+    
+    messages = ChatLog.objects.filter(chat=chat).order_by('created_at')
+
+    messages_list = []
+
+    for message in messages:
+        messages_list.append({
+            'message_id': message.message_id,
+            'role': message.role,
+            'content': message.content,
+            'created_at': message.created_at.isoformat()
+        })
+    
+    return JsonResponse({
+        'ok': True,
+        'chat_id': chat.chat_id,
+        'chat_title': chat.chat_title,
+        'messages': messages_list,
+    })
