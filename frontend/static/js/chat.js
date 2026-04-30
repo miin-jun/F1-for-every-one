@@ -844,6 +844,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const changePasswordBtn = document.getElementById('changePasswordBtn');
     const newPasswordRuleMessage = document.getElementById('newPasswordRuleMessage');
     const newPasswordMatchError = document.getElementById('newPasswordMatchError');
+    
 
     if (changePasswordBtn) {
         changePasswordBtn.addEventListener('click', function() {
@@ -937,5 +938,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
         });
+        
     }
+    if (withdrawLink) {
+        withdrawLink.addEventListener('click', function() {
+            window.location.href = '/accounts/withdraw/';
+        });
+    }
+    
 }); 

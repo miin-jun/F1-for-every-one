@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/withdraw.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="withdraw-container">
+        <p>탈퇴시 계정정보와 모든 대화 기록이 영구 삭제되며, 복구할 수 없습니다.</p>
+        <p>정말 탈퇴하시겠습니까?</p>
+
+        <div class="withdraw-buttons">
+            <a href="{% url 'chat:index' %}" class="cancel-btn">아니오</a>
+
+            <form method="post" action="{% url 'accounts:withdraw_confirm' %}">
+                {% csrf_token %}
+                <button type="submit" class="withdraw-btn">네</button>
+            </form>
+        </div>  
+    </div>
+{% endblock %}
