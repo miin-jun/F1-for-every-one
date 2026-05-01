@@ -1,13 +1,22 @@
 from openai import OpenAI
+
 from config import Settings
 from prompts import F1_SYSTEM_PROMPT
 from schemas import ChatRequest, ChatResponse, Citation
-from src.services.ex_api_service import build_external_api_context, build_external_api_citations
+from src.services.ex_api_service import (
+    build_external_api_context,
+    build_external_api_citations,
+)
+from src.rag.retriever import search_regulations, search_regulations_with_debug
+from sentence_transformers import CrossEncoder
 
 client = OpenAI(api_key=Settings.OPENAI_API_KEY)
 
 
-async def create_chat_answer(request: ChatRequest) -> ChatResponse:
+async def create_chat_answer(
+    request: ChatRequest,
+    debug: bool = False,
+) -> ChatResponse:
     """
     AI_MODE: mock/openai/rag/agent
     MODE에 따라 테스트 예정
@@ -17,13 +26,28 @@ async def create_chat_answer(request: ChatRequest) -> ChatResponse:
     if mode == "mock":
         return create_mock_answer(request)
 
+    # 검토를 위해 응답의 근거를 현출되게 하는데 프론트에서는 안 보이게 만들어둠
     if mode == "rag":
-        rag_context = await search_regulations_context(request.message)
+        rag_result = search_regulations_with_debug(request.message, k=10)
 
         answer = await generate_openai_answer(
             request=request,
-            context=rag_context,
+            context=rag_result["context"],
         )
+
+        metadata = {
+            "pipeline": "rag",
+            "model": Settings.OPENAI_MODEL,
+        }
+
+        if debug:
+            metadata.update(
+                {
+                    "translated_query": rag_result["translated_query"],
+                    "retrieved_docs": rag_result["debug_docs"],
+                    "context_preview": rag_result["context"][:3000],
+                }
+            )
 
         return ChatResponse(
             answer=answer,
@@ -35,10 +59,7 @@ async def create_chat_answer(request: ChatRequest) -> ChatResponse:
                     source="rag",
                 )
             ],
-            metadata={
-                "pipeline": "rag",
-                "model": Settings.OPENAI_MODEL,
-            },
+            metadata=metadata,
         )
 
     if mode == "agent":
@@ -122,15 +143,7 @@ async def generate_openai_answer(
 
 
 async def search_regulations_context(query: str) -> str:
-    """
-    TODO:
-    추후 RAG 연결
-    지금은 mock context만 반환
-    """
-    return (
-        "현재는 RAG 규정 검색이 연결되지 않은 상태입니다."
-        "사용자가 최신 규정 원문이나 특정 조항을 요구하면, 현재 데이터베이스에서 확인할 수 없다고 안내하세요."
-    )
+    return search_regulations(query, k=10)
 
 
 async def build_agent_context(query: str) -> tuple[str, list[str]]:
@@ -141,7 +154,7 @@ async def build_agent_context(query: str) -> tuple[str, list[str]]:
     contexts: list[str] = []
     tools_used: list[str] = []
 
-    # 규정/RAG 쪽은 아직 mock
+    # 규정/RAG 쪽
     if needs_regulation_search(query):
         rag_context = await search_regulations_context(query)
         contexts.append(f"[search_regulations 결과]\n{rag_context}")
@@ -212,6 +225,7 @@ def create_mock_answer(request: ChatRequest) -> ChatResponse:
             "pipeline": "mock",
         },
     )
+
 
 def needs_regulation_search(query: str) -> bool:
     q = query.lower()
