@@ -3,6 +3,12 @@ let chatOrder = [];
 let activeChatId = null;
 let chatSeq = 0;
 
+let chatInput;
+let textCount;
+let chatMessageArea;
+let chatScrollArea;
+let chatIntro;
+
 document.addEventListener("DOMContentLoaded", function () {
     const chatSidebar = document.getElementById("chatSidebar");
     const sidebarToggle = document.getElementById("sidebarToggle");
@@ -15,12 +21,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const recommendSection = document.getElementById("recommendSection");
     const recommendList = document.getElementById("recommendList");
 
-    const chatInput = document.getElementById("chatInput");
+    chatInput = document.getElementById("chatInput");
     const sendMessageBtn = document.getElementById("sendMessageBtn");
-    const chatMessageArea = document.getElementById("chatMessageArea");
-    const chatScrollArea = document.getElementById("chatScrollArea");
-    const chatIntro = document.getElementById("chatIntro");
-    const textCount = document.getElementById("textCount");
+    chatMessageArea = document.getElementById("chatMessageArea");
+    chatScrollArea = document.getElementById("chatScrollArea");
+    chatIntro = document.getElementById("chatIntro");
+    textCount = document.getElementById("textCount");
 
     const settingsBtn = document.getElementById("settingsBtn");
     const settingsPanel = document.getElementById("settingsPanel");
@@ -59,17 +65,18 @@ document.addEventListener("DOMContentLoaded", function () {
             const response = await fetch('/chat/api/list/');
             const data = await response.json();
             
-            if (data.ok && data.chats.length > 0) {
-                data.chats.forEach(function(chat) {
-                    const chatId = makeChatId();
-                    chatStore[chatId] = {
-                        title: chat.chat_title,
-                        messages: [],
-                        backendChatId: chat.chat_id
-                    };
-                    chatOrder.push(chatId);
-                });
-                
+            if (data.ok) {
+                if (data.chats.length > 0) {
+                    data.chats.forEach(function(chat) {
+                        const chatId = makeChatId();
+                        chatStore[chatId] = {
+                            title: chat.chat_title,
+                            messages: [],
+                            backendChatId: chat.chat_id
+                        };
+                        chatOrder.push(chatId);
+                    });
+                }
                 renderHistory();
             }
         } catch (error) {
@@ -80,6 +87,18 @@ document.addEventListener("DOMContentLoaded", function () {
     async function openChat(chatId) {
         if (!chatStore[chatId]) 
             return;
+
+        if (typeof window.stopVoiceRecording === 'function') {
+            window.stopVoiceRecording();
+        }
+        const voiceModal = document.getElementById('voiceModal');
+        const chatInputArea = document.querySelector('.chat-input-area');
+        if (voiceModal && !voiceModal.classList.contains('hidden')) {
+            voiceModal.classList.add('hidden');
+            if (chatInputArea) {
+                chatInputArea.classList.remove('hidden');
+            }
+        }
 
         activeChatId = chatId;
         
@@ -111,6 +130,14 @@ document.addEventListener("DOMContentLoaded", function () {
             } catch (error) {
                 console.error('메시지 로드 오류:', error);
             }
+        }
+
+        if (chatStore[chatId].backendChatId) {
+            window.history.pushState(
+                { chatId: chatStore[chatId].backendChatId },
+                '',
+                `/chat/${chatStore[chatId].backendChatId}/`
+            );
         }
         
         renderHistory();
@@ -148,6 +175,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!chatInput || !textCount) return;
         textCount.textContent = `${chatInput.value.length}/300`;
     }
+
+    window.updateTextCount = updateTextCount;
 
     function clearChatScreen() {
         if (chatIntro) {
@@ -274,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                openChat(chatId);
+                openChat(chatId, true);
             });
 
             li.appendChild(titleButton);
@@ -288,7 +317,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function createNewChat() {
+        if (typeof window.stopVoiceRecording === 'function') {
+            window.stopVoiceRecording();
+        }
+        const voiceModal = document.getElementById('voiceModal');
+        const chatInputArea = document.querySelector('.chat-input-area');
+        if (voiceModal && !voiceModal.classList.contains('hidden')) {
+            voiceModal.classList.add('hidden');
+            if (chatInputArea) {
+                chatInputArea.classList.remove('hidden');
+            }
+        }
+
         activeChatId = null;
+        
+        window.history.pushState({}, '', '/chat/');
 
         const titleBar = document.querySelector('.chat-title-bar');
         if (titleBar) {
@@ -311,13 +354,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function createChatFromQuestion(question) {
-        // 입력창에 질문하기
         if (chatInput) {
             chatInput.value = question;
             updateTextCount();
         }
         
-        // 백엔드 호출
         sendCurrentMessage();
     }
 
@@ -348,7 +389,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
 
             if (data.ok) {
-                // 새 채팅방이면 로컬 chatStore 생성
                 if (!chatId || !chatStore[chatId]) {
                     chatId = makeChatId();
                     chatStore[chatId] = {
@@ -359,9 +399,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     chatOrder.unshift(chatId);
                     activeChatId = chatId;
 
+                    window.history.pushState(
+                        { chatId: data.chat_id },
+                        '',
+                        `/chat/${data.chat_id}/`
+                    );
+
                     const titleBar = document.querySelector('.chat-title-bar');
-                    const titleElement = document.getElementById('currentChatTitle')
-                    
+                    const titleElement = document.getElementById('currentChatTitle');
+
                     if (titleBar) {
                         titleBar.classList.remove('hidden');
                     }
@@ -370,18 +416,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         titleElement.textContent = data.chat_title;
                     }
                 } else {
-                    // backendChatId 업데이트
                     if (!chatStore[chatId].backendChatId) {
                         chatStore[chatId].backendChatId = data.chat_id;
                     }
-                    
+
+                    window.history.replaceState(
+                        { chatId: chatStore[chatId].backendChatId },
+                        '',
+                        `/chat/${chatStore[chatId].backendChatId}/`
+                    );
+
                     const titleBar = document.querySelector('.chat-title-bar');
                     if (titleBar) {
                         titleBar.classList.remove('hidden');
                     }
                 }
 
-                // 채팅 기록 추가
                 chatStore[chatId].messages.push({
                     type: "user",
                     text: data.user_message.content
@@ -397,6 +447,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 renderHistory();
                 renderMessages(chatId);
+
+                if (typeof playTTS === 'function') {
+                    playTTS(data.assistant_message.content);
+                }
+
             } else {
                 alert(data.error || '메시지 전송 실패');
             }
@@ -405,6 +460,8 @@ document.addEventListener("DOMContentLoaded", function () {
             alert('메시지 전송 중 오류가 발생했습니다.');
         }
     }
+
+    window.sendCurrentMessage = sendCurrentMessage;
 
     function renderRandomRecommendations() {
         if (!recommendList) return;
@@ -445,8 +502,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // 비밀번호 변경 모달 열기
         if (passwordChangeModal) {
             passwordChangeModal.classList.remove('hidden');
+        }
     }
-}
 
     if (sidebarToggle && chatSidebar) {
         sidebarToggle.addEventListener("click", function () {
@@ -482,7 +539,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 localChatIds.push(chatId);
 
-                // 백엔드 chat_id가 있으면 수집
                 if (chatStore[chatId] && chatStore[chatId].backendChatId) {
                     backendChatIds.push(chatStore[chatId].backendChatId);
                 }
@@ -525,8 +581,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (localChatIds.includes(activeChatId)) {
-                activeChatId = null;
-                clearChatScreen();
+                window.location.href = '/chat/';
+                return;
             }
 
             historyList.classList.remove("delete-mode");
@@ -534,7 +590,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             renderHistory();
         });
-    }    
+    }
+
 
     if (chatInput) {
         chatInput.addEventListener("input", updateTextCount);
@@ -557,7 +614,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (settingsMenu) {
                 settingsMenu.classList.remove("hidden");
             }
-
             return;
         }
 
@@ -591,7 +647,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     myInfoMenu.classList.add("hidden");
                 }
             }
-
             return;
         }
 
@@ -687,10 +742,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // seedInitialHistory();
     loadChatHistory();
     clearChatScreen();
     updateTextCount();
+
+    // 페이지 로드 시 URL에서 chat_id 확인하여 해당 채팅방 열기
+    const pathParts = window.location.pathname.split('/');
+    if (pathParts[1] === 'chat' && pathParts[2] && pathParts[2] !== '') {
+        const initialChatId = parseInt(pathParts[2]);
+        
+        // chatStore 로드 후 해당 채팅방 열기
+        setTimeout(function() {
+            for (let i = 0; i < chatOrder.length; i++) {
+                const chatId = chatOrder[i];
+                if (chatStore[chatId].backendChatId === initialChatId) {
+                    openChat(chatId);
+                    break;
+                }
+            }
+        }, 500);
+    }
 
     const titleBar = document.querySelector('.chat-title-bar');
     if (titleBar) {
@@ -706,6 +777,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
     const currentPasswordToggle = document.getElementById('currentPasswordToggle');
     const currentPasswordDisplay = document.getElementById('currentPasswordDisplay');
 
@@ -807,11 +879,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             })
             .then(response => {
-                console.log('Response status:', response.status); // 디버깅용
+                console.log('Response status:', response.status);
                 return response.json();
             })
             .then(data => {
-                console.log('Response data:', data); // 디버깅용
+                console.log('Response data:', data);
                 
                 if (data.ok) {
                     // 성공
@@ -831,7 +903,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .catch(error => {
-                console.error('Error:', error); // 디버깅용
+                console.error('Error:', error);
                 if (currentPasswordError) {
                     currentPasswordError.textContent = '× 오류가 발생했습니다. 다시 시도해주세요.';
                     currentPasswordError.classList.remove('hidden');
@@ -844,7 +916,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const changePasswordBtn = document.getElementById('changePasswordBtn');
     const newPasswordRuleMessage = document.getElementById('newPasswordRuleMessage');
     const newPasswordMatchError = document.getElementById('newPasswordMatchError');
-    
 
     if (changePasswordBtn) {
         changePasswordBtn.addEventListener('click', function() {
@@ -938,12 +1009,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
         });
-        
     }
+    
     if (withdrawLink) {
         withdrawLink.addEventListener('click', function() {
             window.location.href = '/accounts/withdraw/';
         });
     }
-    
-}); 
+});
