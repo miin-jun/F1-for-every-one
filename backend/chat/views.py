@@ -1,11 +1,66 @@
-import json
+import io, json, os
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
-from django.shortcuts import render
+from dotenv import load_dotenv
+from gtts import gTTS
+import openai
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from .models import Chat, ChatLog
+
+load_dotenv()
+
+
+def _model_role(role):
+    return "user" if role == "user" else "assistant"
+
+
+def _build_model_history(chat):
+    messages = ChatLog.objects.filter(chat=chat).order_by("created_at")
+
+    return [
+        {
+            "role": _model_role(message.role),
+            "content": message.content,
+        }
+        for message in messages
+    ]
+
+
+def _request_model_answer(chat, content, history=None):
+    model_server_url = settings.MODEL_SERVER_URL.rstrip("/")
+    payload = {
+        "message": content,
+        "session_id": str(chat.chat_id),
+        "history": history if history is not None else _build_model_history(chat),
+    }
+
+    request = Request(
+        f"{model_server_url}/ai/chat",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with urlopen(request, timeout=60) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except HTTPError as error:
+        detail = error.read().decode("utf-8", errors="ignore")
+        raise RuntimeError(f"Model server HTTP {error.code}: {detail}") from error
+    except URLError as error:
+        raise RuntimeError(f"Model server connection failed: {error.reason}") from error
+
+    answer = data.get("answer", "").strip()
+    if not answer:
+        raise RuntimeError("Model server returned an empty answer.")
+
+    return answer
 
 
 @login_required
@@ -38,6 +93,8 @@ def create_message(request):
             chat_title=title
         )
     
+    model_history = _build_model_history(chat)
+
     # 사용자 채팅 저장
     user_message = ChatLog.objects.create(
         chat=chat,
@@ -46,8 +103,14 @@ def create_message(request):
     )
     
     # 응답 생성
-    assistant_content = "안녕하세요! F1 규정에 대해 물어보세요."
-    
+    try:
+        assistant_content = _request_model_answer(chat, content, model_history)
+    except RuntimeError as error:
+        return JsonResponse({
+            "ok": False,
+            "error": str(error),
+        }, status=502)
+
     assistant_message = ChatLog.objects.create(
         chat=chat,
         role='system',
@@ -95,3 +158,125 @@ def delete_chats(request):
         })
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)
+    
+
+@login_required
+def get_chats(request):
+    '''채팅 목록 조회'''
+    chats = Chat.objects.filter(user=request.user).order_by('-updated_at')
+
+    chat_list = []
+
+    for chat in chats:
+        chat_list.append({
+            'chat_id': chat.chat_id,
+            'chat_title': chat.chat_title,
+            'created_at': chat.created_at.isoformat(),
+            'updated_at': chat.updated_at.isoformat(),
+        })
+    
+    return JsonResponse({
+        'ok': True,
+        'chats': chat_list,
+    })
+
+
+@login_required
+def get_chat_messages(request, chat_id):
+    '''상세 채팅 조회'''
+    try:
+        chat = Chat.objects.get(chat_id=chat_id, user=request.user)
+
+    except Chat.DoesNotExist:
+        return JsonResponse({
+            'ok': False,
+            'error': '채팅방을 찾을 수 없습니다.'
+        })
+    
+    messages = ChatLog.objects.filter(chat=chat).order_by('created_at')
+
+    messages_list = []
+
+    for message in messages:
+        messages_list.append({
+            'message_id': message.message_id,
+            'role': message.role,
+            'content': message.content,
+            'created_at': message.created_at.isoformat()
+        })
+    
+    return JsonResponse({
+        'ok': True,
+        'chat_id': chat.chat_id,
+        'chat_title': chat.chat_title,
+        'messages': messages_list,
+    })
+
+
+@login_required
+def chat_detail(request, chat_id):
+    try:
+        chat = Chat.objects.get(chat_id=chat_id, user=request.user)
+    except Chat.DoesNotExist:
+        return render(request, '404.html', status=404)
+
+    return render(request, 'chat/chat_main.html', {
+        'initial_chat_id': chat.chat_id,
+    })
+
+
+@require_http_methods(["POST"])
+@login_required
+def transcribe_audio(request):
+    """STT - OpenAI Whisper API"""
+    try:
+        audio_file = request.FILES.get('audio')
+        if not audio_file:
+            return JsonResponse({'ok': False, 'error': '오디오 파일이 없습니다.'})
+
+        client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+
+        audio_file.seek(0)
+
+        transcription = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=(audio_file.name, audio_file.file, audio_file.content_type),
+            language="ko"
+        )
+        
+        return JsonResponse({
+            'ok': True,
+            'text': transcription.text
+        })
+        
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@require_http_methods(["POST"])
+@login_required
+def text_to_speech(request):
+    """TTS - gTTS"""
+    try:
+        import json
+        data = json.loads(request.body)
+        text = data.get('text', '')
+        
+        if not text:
+            return JsonResponse({'ok': False, 'error': '텍스트가 없습니다.'})
+
+        tts = gTTS(text=text, lang='ko')
+
+        audio_buffer = io.BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+
+        from django.http import HttpResponse
+        response = HttpResponse(audio_buffer.read(), content_type='audio/mpeg')
+        response['Content-Disposition'] = 'inline; filename="speech.mp3"'
+        
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
