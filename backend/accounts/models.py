@@ -2,10 +2,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
-
 class UserManager(BaseUserManager):
     '''User 커스텀 매니저'''
-
     def create_user(self, email, password=None):
         if not email:
             raise ValueError('이메일 형식이 아닙니다.')
@@ -22,7 +20,6 @@ class UserManager(BaseUserManager):
         user.is_superuser = True
         user.save(using=self._db)
         return user
-
 
 class User(AbstractUser):
     '''User 모델'''
