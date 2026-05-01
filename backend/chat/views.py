@@ -1,8 +1,12 @@
 import io, json, os
 
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+from django.conf import settings
 from dotenv import load_dotenv
 from gtts import gTTS
 import openai
+
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -46,6 +50,8 @@ def create_message(request):
             chat_title=title,
         )
     
+    model_history = _build_model_history(chat)
+
     # 사용자 채팅 저장
     user_message = ChatLog.objects.create(
         chat=chat,
@@ -54,7 +60,11 @@ def create_message(request):
     )
     
     # 응답 생성
+
+
+
     assistant_content = "안녕하세요! F1 규정에 대해 물어보세요."
+
     assistant_message = ChatLog.objects.create(
         chat=chat,
         role='system',
@@ -228,3 +238,4 @@ def text_to_speech(request):
         
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)})
+
