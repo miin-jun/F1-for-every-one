@@ -17,8 +17,10 @@ def _get_cache_key(email):
     return f"signup_code:{email}"
 
 @csrf_exempt
-@require_POST
 def login_index(request):
+    if request.method == "GET":
+        return redirect("/")  # 시작 페이지로 이동
+
     email = request.POST.get('email', '').strip()
     password = request.POST.get('password', '').strip()
     
@@ -29,9 +31,10 @@ def login_index(request):
     
     if user is not None:
         login(request, user)
-        return JsonResponse({"ok": True, "redirect": "/chat/"}) 
+        return JsonResponse({"ok": True, "redirect": "/chat/"})
     else:
         return JsonResponse({"ok": False, "error": "이메일 또는 비밀번호가 일치하지 않습니다."})
+    
 
 
 @csrf_exempt
@@ -77,6 +80,25 @@ def send_code(request):
         from_email=None,
         recipient_list=[email],
     )
+
+    return JsonResponse({"ok": True})
+
+@csrf_exempt
+@require_POST
+def verify_code(request):
+    email = request.POST.get("email", "").strip()
+    code = request.POST.get("code", "").strip()
+
+    if not email or not code:
+        return JsonResponse({"ok": False, "error": "이메일과 인증코드를 입력해주세요."}, status=400)
+
+    cached_code = cache.get(_get_cache_key(email))
+
+    if not cached_code:
+        return JsonResponse({"ok": False, "error": "인증코드가 만료되었습니다."})
+
+    if cached_code != code:
+        return JsonResponse({"ok": False, "error": "인증코드가 일치하지 않습니다."})
 
     return JsonResponse({"ok": True})
 
@@ -173,3 +195,23 @@ def withdraw_confirm(request):
 
 def withdraw_done(request):
     return render(request, "withdraw/withdraw_done.html")
+
+@csrf_exempt
+@require_POST
+def reset_password(request):
+    """비밀번호 찾기 후 재설정 - 로그인 없이 가능"""
+    email = request.POST.get("email", "").strip()
+    new_password = request.POST.get("new_password", "").strip()
+
+    if not email or not new_password:
+        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "존재하지 않는 이메일입니다."}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+
+    return JsonResponse({"ok": True})
