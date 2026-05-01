@@ -13,4 +13,4 @@ urlpatterns = [
     path("withdraw/done/", views.withdraw_done, name="withdraw_done"),
 
     path("logout/", views.logout_view, name="logout"),
-]
+]   

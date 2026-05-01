@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}For everyOne Chat{% endblock %}
+{% block title %}For everyOne{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/chat.css' %}">
@@ -25,7 +25,11 @@
         </div>
 
         <button type="button" class="new-chat-btn" id="newChatBtn">
-            <span class="plus-circle">＋</span>
+            <svg class="plus-circle-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
             <span class="new-chat-text">New Chat</span>
         </button>
 
@@ -33,9 +37,7 @@
             <div class="history-header">
                 <h2>History</h2>
 
-                <button type="button" class="history-more-btn" id="historyMoreBtn" aria-label="대화 기록 관리">
-                    ⋮
-                </button>
+                <button type="button" class="history-more-btn" id="historyMoreBtn" aria-label="대화 기록 관리">⋮</button>
 
                 <button type="button" class="history-delete-btn hidden" id="historyDeleteBtn" aria-label="선택 기록 삭제">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -48,24 +50,7 @@
                 </button>
             </div>
 
-            <ul class="history-list" id="historyList">
-                <li>
-                    <button type="button" class="history-title">지금 시즌 1위 드라이버가 DRS...</button>
-                    <input type="checkbox" class="history-check">
-                </li>
-                <li>
-                    <button type="button" class="history-title">DRS가 뭐야?</button>
-                    <input type="checkbox" class="history-check">
-                </li>
-                <li>
-                    <button type="button" class="history-title">소니 헤이즈가 누구야?</button>
-                    <input type="checkbox" class="history-check">
-                </li>
-                <li>
-                    <button type="button" class="history-title">점심 메뉴 추천해 줘</button>
-                    <input type="checkbox" class="history-check">
-                </li>
-            </ul>
+            <ul class="history-list" id="historyList"></ul>
         </section>
 
         <div class="sidebar-bottom">
@@ -85,9 +70,7 @@
     </span>
 </div>
 
-    <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">
-        ⚙
-    </button>
+    <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">⚙</button>
 
     <!-- 설정 메뉴 전체 패널 -->
 <div class="settings-panel hidden" id="settingsPanel">
@@ -157,20 +140,47 @@
 
     <!-- 메인 채팅 영역 -->
     <main class="chat-main">
-        
-        <!-- 현재 채팅 제목 -->
-    <section class="chat-title-bar">
-        <h2 id="currentChatTitle">새 채팅</h2>
-    </section>
 
-    <section class="chat-intro" id="chatIntro">
-        <h1>For everyOne</h1>
-        <p>F1에 대해 무엇이든 물어보세요!</p>
-    </section>
+        <section class="chat-title-bar">
+            <h2 id="currentChatTitle">새 채팅</h2>
+        </section>
+
+        <section class="chat-intro" id="chatIntro">
+            <h1>For everyOne</h1>
+            <p>F1에 대해 무엇이든 물어보세요!</p>
+        </section>
 
         <section class="chat-scroll-area" id="chatScrollArea">
         <div class="chat-message-area" id="chatMessageArea"></div>
         </section>
+
+        <!-- 음성 녹음 오버레이 -->
+        <div class="voice-recording-overlay hidden" id="voiceModal">
+            <div class="voice-chat-preview" id="voiceChatPreview"></div>
+            <div class="voice-recording-area">
+                <div class="voice-circle-animation">
+                    <div class="voice-circle voice-circle-1"></div>
+                    <div class="voice-circle voice-circle-2"></div>
+                    <div class="voice-circle voice-circle-3"></div>
+
+                    <button type="button" class="voice-mic-center" aria-label="녹음 종료">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 14.5C10.35 14.5 9 13.15 9 11.5V6.5C9 4.85 10.35 3.5 12 3.5C13.65 3.5 15 4.85 15 6.5V11.5C15 13.15 13.65 14.5 12 14.5Z"></path>
+                            <path d="M6.5 11.5C6.5 14.55 8.95 17 12 17C15.05 17 17.5 14.55 17.5 11.5"></path>
+                            <path d="M12 17V20.5"></path>
+                            <path d="M9 20.5H15"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="voice-timer" id="voiceTimer">0s</div>
+
+                <div class="voice-error hidden" id="voiceError">
+                    <p class="voice-error-text">음성 인식에 실패했습니다. 다시 시도해주세요.</p>
+                </div>
+                <button type="button" id="voiceBackBtn" class="voice-back-btn">채팅방으로 되돌아가기</button>
+            </div>
+        </div>
 
         <section class="recommend-section" id="recommendSection">
             <h3>추천 질문</h3>
@@ -219,10 +229,10 @@
         </section>
     </main>
     {% include 'chat/modals/password_change_modal.html' %}
-
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/chat.js' %}"></script>
+<script src="{% static 'js/voice.js' %}"></script> 
 {% endblock %}

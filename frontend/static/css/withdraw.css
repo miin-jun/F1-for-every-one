@@ -1,0 +1,115 @@
+.withdraw-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 16px;
+    padding: 40px 20px;
+}
+
+.withdraw-container h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.withdraw-container p {
+    font-size: 16px;
+    color: #cccccc;
+    text-align: center;
+}
+
+.withdraw-container label {
+    font-size: 14px;
+    color: #aaaaaa;
+    width: 340px;
+}
+
+.withdraw-container input[type="password"] {
+    width: 340px;
+    padding: 14px 16px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 15px;
+}
+
+.next-btn {
+    width: 340px;
+    padding: 14px;
+    background-color: #e03131;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.next-btn:hover {
+    background-color: #c92a2a;
+}
+
+/* 아니오 버튼 - 빨간색 */
+.cancel-btn {
+    width: 160px;
+    padding: 14px;
+    background-color: #e03131;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.cancel-btn:hover {
+    background-color: #c92a2a;
+}
+
+/* 네 버튼 - 회색 */
+.withdraw-btn {
+    width: 160px;
+    padding: 14px;
+    background-color: #555555;
+    color: #aaaaaa;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.withdraw-btn:hover {
+    background-color: #666666;
+    color: #ffffff;
+}
+
+.withdraw-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.error-message {
+    color: #ff6b6b;
+    font-size: 14px;
+}
+
+.redirect-message {
+    font-size: 14px;
+    color: #aaaaaa;
+    margin-top: 16px;
+}
+
+.withdraw-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 340px;
+}

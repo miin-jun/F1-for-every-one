@@ -11,4 +11,7 @@ urlpatterns = [
     path("signup/", views.signup, name="signup"),
     path("verify-current-password/", views.verify_current_password, name="verify_current_password"),
     path("change-password/", views.change_password, name="change_password"),
+    path("withdraw/", views.withdraw, name="withdraw"),
+    path("withdraw/done/", views.withdraw_done, name="withdraw_done"),
+    path("withdraw/confirm/", views.withdraw_confirm, name="withdraw_confirm"),
 ]

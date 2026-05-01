@@ -1,67 +1,23 @@
 import io, json, os
+
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-
+from django.conf import settings
 from dotenv import load_dotenv
 from gtts import gTTS
 import openai
 
-from django.conf import settings
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.shortcuts import render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods, require_POST
+
 from .models import Chat, ChatLog
 
 load_dotenv()
-
-
-def _model_role(role):
-    return "user" if role == "user" else "assistant"
-
-
-def _build_model_history(chat):
-    messages = ChatLog.objects.filter(chat=chat).order_by("created_at")
-
-    return [
-        {
-            "role": _model_role(message.role),
-            "content": message.content,
-        }
-        for message in messages
-    ]
-
-
-def _request_model_answer(chat, content, history=None):
-    model_server_url = settings.MODEL_SERVER_URL.rstrip("/")
-    payload = {
-        "message": content,
-        "session_id": str(chat.chat_id),
-        "history": history if history is not None else _build_model_history(chat),
-    }
-
-    request = Request(
-        f"{model_server_url}/ai/chat",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-
-    try:
-        with urlopen(request, timeout=60) as response:
-            data = json.loads(response.read().decode("utf-8"))
-    except HTTPError as error:
-        detail = error.read().decode("utf-8", errors="ignore")
-        raise RuntimeError(f"Model server HTTP {error.code}: {detail}") from error
-    except URLError as error:
-        raise RuntimeError(f"Model server connection failed: {error.reason}") from error
-
-    answer = data.get("answer", "").strip()
-    if not answer:
-        raise RuntimeError("Model server returned an empty answer.")
-
-    return answer
-
 
 @login_required
 def chat_index(request):
@@ -83,6 +39,7 @@ def create_message(request):
     if chat_id:
         try:
             chat = Chat.objects.get(chat_id=chat_id, user=request.user)
+
         except Chat.DoesNotExist:
             return JsonResponse({"ok": False, "error": "채팅방을 찾을 수 없습니다."}, status=404)
     else:
@@ -90,7 +47,7 @@ def create_message(request):
         title = content[:30]
         chat = Chat.objects.create(
             user=request.user,
-            chat_title=title
+            chat_title=title,
         )
     
     model_history = _build_model_history(chat)
@@ -99,23 +56,23 @@ def create_message(request):
     user_message = ChatLog.objects.create(
         chat=chat,
         role='user',
-        content=content
+        content=content,
     )
     
     # 응답 생성
-    try:
-        assistant_content = _request_model_answer(chat, content, model_history)
-    except RuntimeError as error:
-        return JsonResponse({
-            "ok": False,
-            "error": str(error),
-        }, status=502)
+
+
+
+    assistant_content = "안녕하세요! F1 규정에 대해 물어보세요."
 
     assistant_message = ChatLog.objects.create(
         chat=chat,
         role='system',
-        content=assistant_content
+        content=assistant_content,
     )
+
+    chat.updated_at = timezone.now()
+    chat.save(update_fields=['updated_at'])
     
     return JsonResponse({
         "ok": True,
@@ -124,12 +81,12 @@ def create_message(request):
         "user_message": {
             "message_id": user_message.message_id,
             "content": user_message.content,
-            "created_at": user_message.created_at.isoformat()
+            "created_at": user_message.created_at.isoformat(),
         },
         "assistant_message": {
             "message_id": assistant_message.message_id,
             "content": assistant_message.content,
-            "created_at": assistant_message.created_at.isoformat()
+            "created_at": assistant_message.created_at.isoformat(),
         }
     })
 
@@ -154,8 +111,9 @@ def delete_chats(request):
         
         return JsonResponse({
             "ok": True,
-            "deleted_count": deleted_count
+            "deleted_count": deleted_count,
         })
+    
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)
     
@@ -280,3 +238,4 @@ def text_to_speech(request):
         
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)})
+
