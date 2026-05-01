@@ -37,9 +37,7 @@
             <div class="history-header">
                 <h2>History</h2>
 
-                <button type="button" class="history-more-btn" id="historyMoreBtn" aria-label="대화 기록 관리">
-                    ⋮
-                </button>
+                <button type="button" class="history-more-btn" id="historyMoreBtn" aria-label="대화 기록 관리">⋮</button>
 
                 <button type="button" class="history-delete-btn hidden" id="historyDeleteBtn" aria-label="선택 기록 삭제">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -72,9 +70,7 @@
     </span>
 </div>
 
-    <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">
-        ⚙
-    </button>
+    <button type="button" class="settings-btn" id="settingsBtn" aria-label="설정">⚙</button>
 
     <!-- 설정 메뉴 전체 패널 -->
 <div class="settings-panel hidden" id="settingsPanel">
@@ -160,6 +156,7 @@
 
         <!-- 음성 녹음 오버레이 -->
         <div class="voice-recording-overlay hidden" id="voiceModal">
+            <div class="voice-chat-preview" id="voiceChatPreview"></div>
             <div class="voice-recording-area">
                 <div class="voice-circle-animation">
                     <div class="voice-circle voice-circle-1"></div>
@@ -176,14 +173,12 @@
                     </button>
                 </div>
 
-                <div class="voice-timer" id="voiceTimer">24s</div>
+                <div class="voice-timer" id="voiceTimer">0s</div>
 
                 <div class="voice-error hidden" id="voiceError">
                     <p class="voice-error-text">음성 인식에 실패했습니다. 다시 시도해주세요.</p>
-                    <button type="button" id="voiceBackBtn" class="voice-back-btn">
-                        채팅방으로 되돌아가기
-                    </button>
                 </div>
+                <button type="button" id="voiceBackBtn" class="voice-back-btn">채팅방으로 되돌아가기</button>
             </div>
         </div>
 
