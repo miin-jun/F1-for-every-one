@@ -14,4 +14,6 @@ urlpatterns = [
     path("withdraw/", views.withdraw, name="withdraw"),
     path("withdraw/done/", views.withdraw_done, name="withdraw_done"),
     path("withdraw/confirm/", views.withdraw_confirm, name="withdraw_confirm"),
+    path("verify-code/", views.verify_code, name="verify_code"),
+    path("reset-password/", views.reset_password, name="reset_password"),
 ]

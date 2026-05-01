@@ -155,33 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return "";
     }
 
-    if (loginSubmitBtn && loginEmailInput) {
-        loginSubmitBtn.addEventListener("click", function (event) {
-            event.preventDefault();
-
-            const email = loginEmailInput.value.trim();
-            const password = getLoginPasswordValue();
-
-            if (!isValidEmail(email)) {
-                showLoginEmailError();
-                hideLoginPasswordError();
-                return;
-            }
-
-            hideLoginEmailError();
-
-            // 테스트용 로그인 비밀번호
-            if (password !== "test1234!") {
-                showLoginPasswordError();
-                return;
-            }
-
-            hideLoginPasswordError();
-
-            // 로그인 성공 시 채팅 메인 페이지로 이동
-            window.location.assign("/chat/");
-        });
-    }
+    
 
     if (loginEmailInput) {
         loginEmailInput.addEventListener("input", function () {
@@ -720,69 +694,76 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // if (signupSubmitBtn) {
-    //     signupSubmitBtn.addEventListener("click", function () {
-    //         const email = signupEmailInput ? signupEmailInput.value.trim() : "";
-    //         const password = signupPassword ? signupPassword.value.trim() : "";
-    //         const passwordCheck = signupPasswordCheck ? signupPasswordCheck.value.trim() : "";
-    //         const code = signupCodeInput ? signupCodeInput.value.trim() : "";
+    if (signupSubmitBtn) {
+    signupSubmitBtn.addEventListener("click", async function () {
+        signupSubmitBtn.disabled = true;
 
-    //         if (!isValidEmail(email)) {
-    //             showSignupEmailFormatError();
-    //             return;
-    //         }
+        try {
+            const email = signupEmailInput ? signupEmailInput.value.trim() : "";
+            const password = signupPassword ? signupPassword.value.trim() : "";
+            const passwordCheck = signupPasswordCheck ? signupPasswordCheck.value.trim() : "";
+            const code = signupCodeInput ? signupCodeInput.value.trim() : "";
 
-    //         if (!isSignupEmailChecked) {
-    //             showSignupEmailDuplicateError();
-    //             return;
-    //         }
+            if (!isValidEmail(email)) { showSignupEmailFormatError(); return; }
+            if (!isSignupEmailChecked) { showSignupEmailDuplicateError(); return; }
+            if (!isValidSignupPassword(password)) {
+                if (signupPassword) signupPassword.parentElement.classList.add("error");
+                return;
+            }
+            if (password !== passwordCheck) {
+                if (signupPassword) signupPassword.parentElement.classList.add("error");
+                if (signupPasswordCheck) signupPasswordCheck.parentElement.classList.add("error");
+                if (signupPasswordMatchError) signupPasswordMatchError.classList.remove("hidden");
+                return;
+            }
+            if (signupRemainSeconds <= 0) { showSignupCodeExpiredError(); return; }
 
-    //         if (!isValidSignupPassword(password)) {
-    //             if (signupPassword) {
-    //                 signupPassword.parentElement.classList.add("error");
-    //             }
-    //             return;
-    //         }
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('code', code);
 
-    //         if (password !== passwordCheck) {
-    //             if (signupPassword) signupPassword.parentElement.classList.add("error");
-    //             if (signupPasswordCheck) signupPasswordCheck.parentElement.classList.add("error");
-    //             if (signupPasswordMatchError) signupPasswordMatchError.classList.remove("hidden");
-    //             return;
-    //         }
+            const verifyResponse = await fetch('/accounts/verify-code/', { method: 'POST', body: formData });
+            const verifyData = await verifyResponse.json();
+            if (!verifyData.ok) { showSignupCodeError(); return; }
 
-    //         if (signupRemainSeconds <= 0) {
-    //             showSignupCodeExpiredError();
-    //             return;
-    //         }
+            const signupFormData = new FormData();
+            signupFormData.append('email', email);
+            signupFormData.append('password', password);
 
-    //         if (code !== testSignupCode) {
-    //             showSignupCodeError();
-    //             return;
-    //         }
+            const signupResponse = await fetch('/accounts/signup/', { method: 'POST', body: signupFormData });
+            const signupData = await signupResponse.json();
 
-    //         hideSignupCodeMessages();
-    //         showSignupCompleteToast();
+            if (signupData.ok) {
+                hideSignupCodeMessages();
+                showSignupCompleteToast();
 
-    //         if (signupEmailInput) signupEmailInput.value = "";
-    //         if (signupPassword) signupPassword.value = "";
-    //         if (signupPasswordCheck) signupPasswordCheck.value = "";
-    //         if (signupCodeInput) signupCodeInput.value = "";
+                if (signupEmailInput) signupEmailInput.value = "";
+                if (signupPassword) signupPassword.value = "";
+                if (signupPasswordCheck) signupPasswordCheck.value = "";
+                if (signupCodeInput) signupCodeInput.value = "";
 
-    //         isSignupEmailChecked = false;
-    //         signupRemainSeconds = 0;
+                isSignupEmailChecked = false;
+                signupRemainSeconds = 0;
+                if (signupCodeTimer) signupCodeTimer.classList.add("hidden");
 
-    //         if (signupCodeTimer) {
-    //             signupCodeTimer.classList.add("hidden");
-    //         }
+                setTimeout(function () {
+                    closeAllModals();
+                    openModal(loginModal);
+                    signupSubmitBtn.disabled = false;
+                }, 900);
+                return;  // finally 건너뜀
+            } else {
+                alert(signupData.error || '회원가입에 실패했습니다.');
+            }
 
-    //         setTimeout(function () {
-    //             closeAllModals();
-    //             openModal(loginModal);
-    //         }, 900);
-    //     });
-    // }
-
+        } catch (error) {
+            console.error('회원가입 에러:', error);
+            alert('오류가 발생했습니다. 다시 시도해주세요.');
+        } finally {
+            signupSubmitBtn.disabled = false;  // 실패/에러 시에만 실행됨
+        }
+    });
+}
     // ==============================
     // 비밀번호 찾기 - 이메일 인증 처리
     // ==============================
@@ -888,21 +869,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (resetEmailSendBtn && resetEmailInput) {
-        resetEmailSendBtn.addEventListener("click", function () {
-            const email = resetEmailInput.value.trim();
+    resetEmailSendBtn.addEventListener("click", async function () {
+        const email = resetEmailInput.value.trim();
 
-            hideResetCodeMessages();
+        hideResetCodeMessages();
 
-            if (!isValidEmail(email)) {
-                showResetEmailError();
-                return;
+        if (!isValidEmail(email)) {
+            showResetEmailError();
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('purpose', 'reset');  // 비밀번호 찾기용
+
+            const response = await fetch('/accounts/send-code/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.ok) {
+                showResetEmailSuccess();
+                resetEmailSendBtn.textContent = "재전송";
+                startResetCodeTimer();
+            } else {
+                showResetEmailError();  // 가입되지 않은 이메일 등
             }
+        } catch (error) {
+            console.error('인증코드 전송 에러:', error);
+            alert('오류가 발생했습니다. 다시 시도해주세요.');
+        }
+    });
+}
 
-            showResetEmailSuccess();
-            resetEmailSendBtn.textContent = "재전송";
-            startResetCodeTimer();
-        });
-    }
 
     if (resetEmailInput) {
         resetEmailInput.addEventListener("input", function () {
@@ -917,25 +918,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (resetConfirmBtn) {
-        resetConfirmBtn.addEventListener("click", function () {
-            const code = resetCodeInput ? resetCodeInput.value.trim() : "";
+    resetConfirmBtn.addEventListener("click", async function () {
+        const email = resetEmailInput ? resetEmailInput.value.trim() : "";
+        const code = resetCodeInput ? resetCodeInput.value.trim() : "";
 
-            if (resetRemainSeconds <= 0) {
-                showResetCodeExpiredError();
-                return;
-            }
+        if (resetRemainSeconds <= 0) {
+            showResetCodeExpiredError();
+            return;
+        }
 
-            if (code !== testResetCode) {
+        // 백엔드에서 인증코드 검증
+        try {
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('code', code);
+
+            const response = await fetch('/accounts/verify-code/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (!data.ok) {
                 showResetCodeError();
                 return;
             }
 
+            // 인증 성공 → 비밀번호 재설정 모달로 이동
             hideResetCodeMessages();
-
             closeAllModals();
             openModal(passwordResetModal);
-        });
-    }
+
+        } catch (error) {
+            console.error('인증코드 확인 에러:', error);
+            alert('오류가 발생했습니다. 다시 시도해주세요.');
+        }
+    });
+}
 
     // ==============================
     // 새 비밀번호 설정
@@ -1214,86 +1233,64 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (passwordResetConfirmBtn) {
-        passwordResetConfirmBtn.addEventListener("click", function () {
-            const isRuleValid = isValidNewPassword(newPasswordValue);
-            const isMatched =
-                newPasswordValue === newPasswordCheckValue &&
-                newPasswordCheckValue !== "";
+    passwordResetConfirmBtn.addEventListener("click", async function () {
+        const isRuleValid = isValidNewPassword(newPasswordValue);
+        const isMatched = newPasswordValue === newPasswordCheckValue && newPasswordCheckValue !== "";
 
-            if (!isRuleValid) {
-                if (newPasswordDisplay) {
-                    newPasswordDisplay.parentElement.classList.add("error");
-                }
-
-                if (newPasswordCheckDisplay) {
-                    newPasswordCheckDisplay.parentElement.classList.remove("error");
-                }
-
-                if (newPasswordMatchError) {
-                    newPasswordMatchError.classList.add("hidden");
-                }
-
-                updateResetPasswordIcons();
-                return;
-            }
-
-            if (!isMatched) {
-                if (newPasswordDisplay) {
-                    newPasswordDisplay.parentElement.classList.add("error");
-                }
-
-                if (newPasswordCheckDisplay) {
-                    newPasswordCheckDisplay.parentElement.classList.add("error");
-                }
-
-                if (newPasswordMatchError) {
-                    newPasswordMatchError.classList.remove("hidden");
-                }
-
-                updateResetPasswordIcons();
-                return;
-            }
-
-            if (newPasswordDisplay) {
-                newPasswordDisplay.parentElement.classList.remove("error");
-            }
-
-            if (newPasswordCheckDisplay) {
-                newPasswordCheckDisplay.parentElement.classList.remove("error");
-            }
-
-            if (newPasswordMatchError) {
-                newPasswordMatchError.classList.add("hidden");
-            }
-
+        if (!isRuleValid) {
+            if (newPasswordDisplay) newPasswordDisplay.parentElement.classList.add("error");
+            if (newPasswordMatchError) newPasswordMatchError.classList.add("hidden");
             updateResetPasswordIcons();
-            showPasswordChangeToast();
+            return;
+        }
 
-            newPasswordValue = "";
-            newPasswordCheckValue = "";
-            isNewPasswordVisible = false;
-            isNewPasswordCheckVisible = false;
+        if (!isMatched) {
+            if (newPasswordDisplay) newPasswordDisplay.parentElement.classList.add("error");
+            if (newPasswordCheckDisplay) newPasswordCheckDisplay.parentElement.classList.add("error");
+            if (newPasswordMatchError) newPasswordMatchError.classList.remove("hidden");
+            updateResetPasswordIcons();
+            return;
+        }
 
-            if (newPasswordDisplay) {
-                newPasswordDisplay.value = "";
+        // 백엔드 API 호출
+        try {
+            const email = resetEmailInput ? resetEmailInput.value.trim() : "";
+
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('new_password', newPasswordValue);
+
+            const response = await fetch('/accounts/reset-password/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.ok) {
+                updateResetPasswordIcons();
+                showPasswordChangeToast();
+
+                newPasswordValue = "";
+                newPasswordCheckValue = "";
+                isNewPasswordVisible = false;
+                isNewPasswordCheckVisible = false;
+
+                if (newPasswordDisplay) newPasswordDisplay.value = "";
+                if (newPasswordReal) newPasswordReal.value = "";
+                if (newPasswordCheckDisplay) newPasswordCheckDisplay.value = "";
+                if (newPasswordCheckReal) newPasswordCheckReal.value = "";
+
+                setTimeout(function () {
+                    closeAllModals();
+                    openModal(loginModal);
+                }, 900);
+            } else {
+                alert(data.error || '비밀번호 변경에 실패했습니다.');
             }
-
-            if (newPasswordReal) {
-                newPasswordReal.value = "";
-            }
-
-            if (newPasswordCheckDisplay) {
-                newPasswordCheckDisplay.value = "";
-            }
-
-            if (newPasswordCheckReal) {
-                newPasswordCheckReal.value = "";
-            }
-
-            setTimeout(function () {
-                closeAllModals();
-                openModal(loginModal);
-            }, 900);
-        });
-    }
+        } catch (error) {
+            console.error('비밀번호 재설정 에러:', error);
+            alert('오류가 발생했습니다. 다시 시도해주세요.');
+        }
+    });
+}
 });
