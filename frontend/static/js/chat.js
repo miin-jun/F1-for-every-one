@@ -114,7 +114,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
         // 메시지가 없으면 DB에서 로드
-        if (chatStore[chatId].messages.length === 0 && chatStore[chatId].backendChatId) {
+        // if (chatStore[chatId].messages.length === 0 && chatStore[chatId].backendChatId) {
+        //     try {
+        //         const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
+        //         const data = await response.json();
+                
+        //         if (data.ok) {
+        //             chatStore[chatId].messages = data.messages.map(function(msg) {
+        //                 return {
+        //                     type: msg.role === 'user' ? 'user' : 'bot',
+        //                     text: msg.content,
+        //                     created_at: msg.created_at
+        //                 };
+        //             });
+        //         }
+        //     } catch (error) {
+        //         console.error('메시지 로드 오류:', error);
+        //     }
+        // }
+
+        if (chatStore[chatId].backendChatId) {
             try {
                 const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
                 const data = await response.json();

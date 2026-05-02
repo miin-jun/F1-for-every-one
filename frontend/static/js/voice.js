@@ -16,13 +16,17 @@ let silenceTimeout = null;
 let audioContext = null; 
 let analyser = null;
 let silenceDetectionInterval = null;
-let currentAudio = null;  
+let currentAudio = null; 
+let shouldProcessSTT = true;  // STT 처리 여부 플래그
+let hasSpoken = false;  // 한 번이라도 말했는지 플래그 
 
 function stopRecordingAndCleanup() {
     const circleAnimation = document.querySelector('.voice-circle-animation');
     if (circleAnimation) {
         circleAnimation.classList.remove('recording');
     }
+
+    shouldProcessSTT = false;
 
     if (currentAudio) {
         // currentAudio.pause();
@@ -190,6 +194,8 @@ function stopRecordingAndSend() {
 }
 
 function startRecording() {
+    shouldProcessSTT = true;
+    hasSpoken = false;
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             currentStream = stream; 
@@ -206,6 +212,15 @@ function startRecording() {
             };
             
             mediaRecorder.onstop = async () => {
+                if (!shouldProcessSTT) {
+                    console.log('⏭️ STT 건너뛰기 (페이지 전환)');
+                    audioChunks = [];
+                    if (currentStream) {
+                        currentStream.getTracks().forEach(track => track.stop());
+                        currentStream = null;
+                    }
+                    return;
+                }
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 audioChunks = [];
                 
@@ -254,7 +269,7 @@ function setupSilenceDetection(stream) {
         const average = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
         
         if (average > SILENCE_THRESHOLD) {
-            // 소리 감지됨
+            hasSpoken = true;
             lastSoundTime = Date.now();
 
             if (silenceTimeout) {
@@ -264,7 +279,7 @@ function setupSilenceDetection(stream) {
         } else {
             const silenceDuration = Date.now() - lastSoundTime;
 
-            if (silenceDuration >= SILENCE_DURATION && !silenceTimeout) {
+            if (silenceDuration >= SILENCE_DURATION && !silenceTimeout && !hasSpoken) {
                 console.log('5초 무음 감지, 자동 종료');
                 
                 const circleAnimation = document.querySelector('.voice-circle-animation');
@@ -444,8 +459,15 @@ async function playTTS(text) {
     }
 
     if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+        try {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio.src = '';
+            currentAudio.load();
+        } catch (e) {
+            console.log('Audio cleanup error:', e);
+        }
+        currentAudio = null;
     }
 
     console.log('🔊 TTS 시작:', text);
@@ -478,6 +500,10 @@ async function playTTS(text) {
                 console.log('✅ TTS 재생 완료');
                 currentAudio = null;
 
+                if (!isVoiceMode) {
+                    return;
+                }
+
                 const chatPreview = document.getElementById('voiceChatPreview');
                 const chatMessageArea = document.getElementById('chatMessageArea');
                 
@@ -495,6 +521,10 @@ async function playTTS(text) {
                 currentAudio = null;
                 resetTimer();
             };
+
+            if (!isVoiceMode) {
+                return;
+            }
             
             await audio.play();
             console.log('🔊 TTS 재생 중...');
