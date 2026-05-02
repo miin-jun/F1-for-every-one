@@ -9,8 +9,9 @@ from langchain_text_splitters import MarkdownHeaderTextSplitter
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 
-DATA_DIR = "/workspace/data"
-VECTOR_DIR = "/tmp/vectorstore"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "..", "data", "rag", "preprocessed"))
+VECTOR_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "..", "vectorstore"))
 
 # steward_decisions.json 로드
 def load_steward_decisions() -> list[Document]:
@@ -203,7 +204,7 @@ def chunk_all(glossary, other_docs, regulation_docs) -> list[Document]:
 def save_to_chroma(chunks: list[Document]):
     embedding_model = HuggingFaceEmbeddings(
         model_name="intfloat/multilingual-e5-large",
-        model_kwargs={"device": "cuda"},
+        model_kwargs={"device": "cpu"},
         encode_kwargs={
             "normalize_embeddings": True,
             "prompt": "passage: "
