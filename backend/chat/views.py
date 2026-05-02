@@ -87,7 +87,7 @@ def create_message(request):
             chat_title=title,
         )
     
-    # model_history = _build_model_history(chat)
+    model_history = _build_model_history(chat)
 
     # 사용자 채팅 저장
     user_message = ChatLog.objects.create(
