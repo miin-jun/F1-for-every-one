@@ -44,3 +44,13 @@ async def chat(request: ChatRequest):
             status_code=500,
             detail=f"AI chat error: {str(error)}",
         )
+    
+@app.post("/ai/chat/debug", response_model=ChatResponse)
+async def chat_debug(request: ChatRequest):
+    try:
+        return await create_chat_answer(request, debug=True)
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI chat debug error: {str(error)}",
+        )
