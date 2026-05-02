@@ -20,7 +20,7 @@ class Settings:
 
     VECTOR_DIR: str = os.getenv(
         "VECTOR_DIR",
-        str(BASE_DIR / "vectorstore" / "vectorstore"),
+        str(BASE_DIR / "vectorstore"),
     )
 
     # 리랭커 설정 추가 🆕

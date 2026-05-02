@@ -1,35 +1,104 @@
+import json
+from typing import Any
+
 from openai import OpenAI
 
 from config import Settings
 from prompts import F1_SYSTEM_PROMPT
 from schemas import ChatRequest, ChatResponse, Citation
-from src.services.ex_api_service import (
-    build_external_api_context,
-    build_external_api_citations,
-)
 from src.rag.retriever import search_regulations, search_regulations_with_debug
-from sentence_transformers import CrossEncoder
+from src.services.ex_api_service import (
+    format_context_block,
+    get_live_race_context,
+    get_past_race_context,
+    get_round_race_context,
+)
 
 client = OpenAI(api_key=Settings.OPENAI_API_KEY)
+
+AGENT_TOOLS = [
+    {
+        "type": "function",
+        "name": "search_regulations",
+        "description": (
+            "Search the local F1 RAG knowledge base for FIA regulations, penalties, flags, "
+            "technical/sporting/financial rules, tire rules, DRS, pit lane, safety car, "
+            "F1 glossary, history, circuits, steward decisions, and related evidence."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The user's F1 question or a focused search query.",
+                },
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_live_race",
+        "description": "Fetch current or live F1 race/session context from OpenF1.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_past_race",
+        "description": (
+            "Fetch F1 season-level historical data such as driver standings, constructor "
+            "standings, championship information, and season records."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The user's question, including any year if present.",
+                },
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_round_race",
+        "description": (
+            "Fetch F1 data for a specific season round or GP, including race, qualifying, "
+            "sprint, or round results."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The user's question, including year and round/GP if present.",
+                },
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+]
 
 
 async def create_chat_answer(
     request: ChatRequest,
     debug: bool = False,
 ) -> ChatResponse:
-    """
-    AI_MODE: mock/openai/rag/agent
-    MODE에 따라 테스트 예정
-    """
     mode = Settings.AI_MODE
 
     if mode == "mock":
         return create_mock_answer(request)
 
-    # 검토를 위해 응답의 근거를 현출되게 하는데 프론트에서는 안 보이게 만들어둠
     if mode == "rag":
         rag_result = search_regulations_with_debug(request.message, k=10)
-
         answer = await generate_openai_answer(
             request=request,
             context=rag_result["context"],
@@ -63,12 +132,7 @@ async def create_chat_answer(
         )
 
     if mode == "agent":
-        context, tools_used = await build_agent_context(request.message)
-
-        answer = await generate_openai_answer(
-            request=request,
-            context=context,
-        )
+        answer, tools_used, debug_info = await generate_agent_answer(request)
 
         return ChatResponse(
             answer=answer,
@@ -76,13 +140,13 @@ async def create_chat_answer(
             tool_used=len(tools_used) > 0,
             citations=build_citations(tools_used),
             metadata={
-                "pipeline": "agent_context_injection",
+                "pipeline": "agent_tool_calling",
                 "model": Settings.OPENAI_MODEL,
                 "tools_used": tools_used,
+                "debug": debug_info if debug else {},
             },
         )
 
-    # 기본값: openai
     answer = await generate_openai_answer(request=request)
 
     return ChatResponse(
@@ -101,6 +165,74 @@ async def generate_openai_answer(
     request: ChatRequest,
     context: str | None = None,
 ) -> str:
+    response = client.responses.create(
+        model=Settings.OPENAI_MODEL,
+        instructions=F1_SYSTEM_PROMPT,
+        input=build_input_messages(request, context=context),
+        store=False,
+    )
+
+    return response.output_text
+
+
+async def generate_agent_answer(request: ChatRequest) -> tuple[str, list[str], dict[str, Any]]:
+    response = client.responses.create(
+        model=Settings.OPENAI_MODEL,
+        instructions=F1_SYSTEM_PROMPT,
+        input=build_input_messages(request),
+        tools=AGENT_TOOLS,
+        tool_choice="auto",
+    )
+
+    tools_used: list[str] = []
+    tool_outputs = []
+    debug_info: dict[str, Any] = {
+        "tool_calls": [],
+    }
+
+    for item in response.output:
+        if get_response_item_value(item, "type") != "function_call":
+            continue
+
+        tool_name = get_response_item_value(item, "name")
+        call_id = get_response_item_value(item, "call_id")
+        arguments = parse_tool_arguments(get_response_item_value(item, "arguments"))
+
+        result = await run_agent_tool(tool_name, arguments, request.message)
+        tools_used.append(tool_name)
+        debug_info["tool_calls"].append(
+            {
+                "name": tool_name,
+                "arguments": arguments,
+                "result_preview": str(result)[:2000],
+            }
+        )
+        tool_outputs.append(
+            {
+                "type": "function_call_output",
+                "call_id": call_id,
+                "output": json.dumps(result, ensure_ascii=False),
+            }
+        )
+
+    if not tool_outputs:
+        return response.output_text, tools_used, debug_info
+
+    final_response = client.responses.create(
+        model=Settings.OPENAI_MODEL,
+        instructions=F1_SYSTEM_PROMPT,
+        input=tool_outputs,
+        previous_response_id=response.id,
+        store=False,
+    )
+
+    return final_response.output_text, dedupe_tools(tools_used), debug_info
+
+
+def build_input_messages(
+    request: ChatRequest,
+    context: str | None = None,
+) -> list[dict[str, str]]:
     input_messages = []
 
     for item in request.history:
@@ -115,13 +247,13 @@ async def generate_openai_answer(
 
     if context:
         user_content = f"""
-- 아래 context를 우선 참고하여 사용자의 질문에 답변
-- context에 없는 최신 정보, 수치, 순위, 특정 규정 조항은 추측 금지
+Use the context below as the source of truth for the user's question.
+Do not invent latest information, standings, numbers, or exact rules that are not in the context.
 
 [context]
 {context}
 
-[사용자 질문]
+[user question]
 {request.message}
 """
 
@@ -132,40 +264,49 @@ async def generate_openai_answer(
         }
     )
 
-    response = client.responses.create(
-        model=Settings.OPENAI_MODEL,
-        instructions=F1_SYSTEM_PROMPT,
-        input=input_messages,
-        store=False,
-    )
-
-    return response.output_text
+    return input_messages
 
 
-async def search_regulations_context(query: str) -> str:
-    return search_regulations(query, k=10)
+async def run_agent_tool(tool_name: str, arguments: dict, fallback_query: str):
+    query = arguments.get("query") or fallback_query
 
+    if tool_name == "search_regulations":
+        return {
+            "tool": "search_regulations",
+            "context": search_regulations(query, k=10),
+        }
 
-async def build_agent_context(query: str) -> tuple[str, list[str]]:
-    """
-    RAG + 외부 API context 조합.
-    현재는 외부 API만 연결하고, RAG는 mock context로 유지.
-    """
-    contexts: list[str] = []
-    tools_used: list[str] = []
+    if tool_name == "get_live_race":
+        return {
+            "tool": "get_live_race",
+            "context": format_context_block(
+                "get_live_race result",
+                await get_live_race_context(),
+            ),
+        }
 
-    # 규정/RAG 쪽
-    if needs_regulation_search(query):
-        rag_context = await search_regulations_context(query)
-        contexts.append(f"[search_regulations 결과]\n{rag_context}")
-        tools_used.append("search_regulations")
+    if tool_name == "get_past_race":
+        return {
+            "tool": "get_past_race",
+            "context": format_context_block(
+                "get_past_race result",
+                await get_past_race_context(query),
+            ),
+        }
 
-    # 외부 API
-    external_context, external_tools = await build_external_api_context(query)
-    contexts.append(external_context)
-    tools_used.extend(external_tools)
+    if tool_name == "get_round_race":
+        return {
+            "tool": "get_round_race",
+            "context": format_context_block(
+                "get_round_race result",
+                await get_round_race_context(query),
+            ),
+        }
 
-    return "\n\n".join(contexts), tools_used
+    return {
+        "tool": tool_name,
+        "error": "Unknown tool",
+    }
 
 
 def build_citations(tool_names: list[str]) -> list[Citation]:
@@ -202,19 +343,16 @@ def create_mock_answer(request: ChatRequest) -> ChatResponse:
 
     if "drs" in message:
         answer = (
-            "DRS는 뒷날개 열림 장치(DRS)로, 직선 구간에서 뒷날개를 열어 공기 저항을 줄이고 "
-            "더 빠르게 달릴 수 있게 하는 기능입니다. 쉽게 말하면 앞차를 추월하기 쉽도록 "
-            "잠깐 속도 보너스를 주는 장치에 가깝습니다."
+            "DRS는 직선 구간에서 리어 윙 플랩을 열어 공기 저항을 줄이고 "
+            "차를 더 빠르게 만드는 장치입니다. 보통 추월을 돕기 위해 사용됩니다."
         )
-    elif "피트" in message or "pit" in message:
+    elif "pit" in message or "피트" in message:
         answer = (
-            "피트스톱(Pit Stop)은 경기 중 차량이 정비 구역에 들어가 타이어를 교체하거나 "
-            "필요한 조치를 받는 과정입니다. F1에서는 언제 피트스톱을 하느냐가 순위에 큰 영향을 줍니다."
+            "피트 스톱은 경기 중 차가 피트 박스에 들어와 타이어 교체나 점검을 받는 과정입니다. "
+            "전략과 순위에 큰 영향을 줍니다."
         )
     else:
-        answer = (
-            "현재는 mock 응답입니다. AI_MODE=openai로 변경하면 OpenAI API를 실제 호출해 답변합니다."
-        )
+        answer = "현재는 mock 응답입니다. AI_MODE를 openai, rag, agent로 바꾸면 실제 모델을 호출합니다."
 
     return ChatResponse(
         answer=answer,
@@ -227,26 +365,25 @@ def create_mock_answer(request: ChatRequest) -> ChatResponse:
     )
 
 
-def needs_regulation_search(query: str) -> bool:
-    q = query.lower()
+def parse_tool_arguments(arguments) -> dict:
+    if not arguments:
+        return {}
 
-    keywords = [
-        "규정",
-        "룰",
-        "rule",
-        "regulation",
-        "페널티",
-        "패널티",
-        "penalty",
-        "플래그",
-        "flag",
-        "타이어 규정",
-        "drs 조건",
-        "트랙 리밋",
-        "track limit",
-        "track limits",
-        "피트레인",
-        "pit lane",
-    ]
+    if isinstance(arguments, dict):
+        return arguments
 
-    return any(keyword in q for keyword in keywords)
+    try:
+        return json.loads(arguments)
+    except json.JSONDecodeError:
+        return {}
+
+
+def get_response_item_value(item, key):
+    if isinstance(item, dict):
+        return item.get(key)
+
+    return getattr(item, key, None)
+
+
+def dedupe_tools(tool_names: list[str]) -> list[str]:
+    return list(dict.fromkeys(tool_names))
