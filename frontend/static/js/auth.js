@@ -4,6 +4,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginSubmitBtn');
     
+    const loginPasswordInput = document.getElementById('loginPasswordDisplay');
+    if (loginPasswordInput) {
+        loginPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (loginBtn) loginBtn.click();  // 로그인 버튼 클릭과 동일하게 동작
+            }
+        });
+    }
+
     if (loginBtn) {
         loginBtn.addEventListener('click', async (e) => {
             e.preventDefault();
