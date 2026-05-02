@@ -35,6 +35,11 @@ class Settings:
         "f1_rules_e5",
     )
 
+    USE_HYBRID_SEARCH: bool = os.getenv("USE_HYBRID_SEARCH", "true").lower() == "true"
+    HYBRID_DENSE_K: int = int(os.getenv("HYBRID_DENSE_K", "20"))
+    HYBRID_KEYWORD_K: int = int(os.getenv("HYBRID_KEYWORD_K", "20"))
+    HYBRID_RRF_K: int = int(os.getenv("HYBRID_RRF_K", "60"))
+
     STT_MODE: str = os.getenv("STT_MODE", "mock")
     TTS_MODE: str = os.getenv("TTS_MODE", "mock")
     OPENAI_STT_MODEL: str = os.getenv("OPENAI_STT_MODEL", "mock")
