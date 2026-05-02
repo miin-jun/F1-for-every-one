@@ -10,7 +10,7 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 
 DATA_DIR = "/workspace/data"
-OUTPUT_BASE = "/tmp/vectorstore"
+VECTOR_DIR = "/tmp/vectorstore"
 
 # steward_decisions.json 로드
 def load_steward_decisions() -> list[Document]:
@@ -210,14 +210,14 @@ def save_to_chroma(chunks: list[Document]):
         },
     )
 
-    if os.path.exists(OUTPUT_BASE):
-        shutil.rmtree(OUTPUT_BASE)
-    os.makedirs(OUTPUT_BASE, exist_ok=True)
+    if os.path.exists(VECTOR_DIR):
+        shutil.rmtree(VECTOR_DIR)
+    os.makedirs(VECTOR_DIR, exist_ok=True)
 
     vector_store = Chroma.from_documents(
         chunks,
         embedding=embedding_model,
-        persist_directory=OUTPUT_BASE,
+        persist_directory=VECTOR_DIR,
         collection_name="f1_rules_e5",
     )
     print(f"벡터 저장 완료: {vector_store._collection.count()}개 청크")
