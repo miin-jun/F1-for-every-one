@@ -19,6 +19,16 @@ from .models import Chat, ChatLog
 
 load_dotenv()
 
+
+def _build_model_history(chat):
+    """ChatLog에서 LLM에 넘길 대화 히스토리를 구성한다."""
+    logs = ChatLog.objects.filter(chat=chat).order_by('created_at')
+    history = []
+    for log in logs:
+        role = 'assistant' if log.role == 'system' else log.role
+        history.append({'role': role, 'content': log.content})
+    return history
+
 @login_required
 def chat_index(request):
     return render(request, 'chat/chat_main.html')
