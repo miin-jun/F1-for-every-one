@@ -114,7 +114,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
         // 메시지가 없으면 DB에서 로드
-        if (chatStore[chatId].messages.length === 0 && chatStore[chatId].backendChatId) {
+        // if (chatStore[chatId].messages.length === 0 && chatStore[chatId].backendChatId) {
+        //     try {
+        //         const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
+        //         const data = await response.json();
+                
+        //         if (data.ok) {
+        //             chatStore[chatId].messages = data.messages.map(function(msg) {
+        //                 return {
+        //                     type: msg.role === 'user' ? 'user' : 'bot',
+        //                     text: msg.content,
+        //                     created_at: msg.created_at
+        //                 };
+        //             });
+        //         }
+        //     } catch (error) {
+        //         console.error('메시지 로드 오류:', error);
+        //     }
+        // }
+
+        if (chatStore[chatId].backendChatId) {
             try {
                 const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
                 const data = await response.json();
@@ -123,7 +142,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     chatStore[chatId].messages = data.messages.map(function(msg) {
                         return {
                             type: msg.role === 'user' ? 'user' : 'bot',
-                            text: msg.content
+                            text: msg.content,
+                            created_at: msg.created_at
                         };
                     });
                 }
@@ -146,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (chatInput) {
             chatInput.value = "";
         }
-
         updateTextCount();
     }
 
@@ -204,11 +223,14 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${hours}:${minutes}`;
     }
 
-    function addMessageElement(type, text) {
+    function addMessageElement(type, text, timestamp, id=null) {
         if (!chatMessageArea) return;
 
         const message = document.createElement("div");
         message.className = `chat-message ${type}`;
+        if (id) {
+            message.id = id;
+        }
 
         const textSpan = document.createElement("span");
         textSpan.className = "chat-message-text";
@@ -216,7 +238,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const timeSpan = document.createElement("span");
         timeSpan.className = "chat-message-time";
-        timeSpan.textContent = getCurrentTime();
+        // timeSpan.textContent = getCurrentTime();
+
+        const date = new Date(timestamp);
+        const today = new Date();
+        const isToday = date.getDate() === today.getDate() &&
+                        date.getMonth() === today.getMonth() &&
+                        date.getFullYear() === today.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        if (isToday) {
+            timeSpan.textContent = `${hours}:${minutes}`;
+        } else {
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            timeSpan.textContent = `${month}-${day} ${hours}:${minutes}`;
+        }
 
         message.appendChild(textSpan);
         message.appendChild(timeSpan);
@@ -226,6 +265,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const scrollTarget = chatScrollArea || chatMessageArea;
         scrollTarget.scrollTop = scrollTarget.scrollHeight;
     }
+
+    window.addMessageElement = addMessageElement;
 
     function renderMessages(chatId) {
         if (!chatMessageArea) return;
@@ -250,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
         hideRecommendSection();
 
         chat.messages.forEach(function (message) {
-            addMessageElement(message.type, message.text);
+            addMessageElement(message.type, message.text, message.created_at, null);
         });
     }
 
@@ -370,6 +411,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let chatId = activeChatId;
 
+        const userTimestamp = new Date().toISOString();
+        addMessageElement('user', message, userTimestamp, null);
+        
+        if (chatIntro) {
+            chatIntro.classList.add('hidden');
+        }
+        const recommendSection = document.getElementById('recommendSection');
+        if (recommendSection) {
+            recommendSection.classList.add('hidden');
+        }
+
+        const tempBotId = 'temp-bot-' + Date.now();
+        addMessageElement('bot', '🤔 답변 생성 중...', userTimestamp, tempBotId);
+        
+        // 입력창 비우기
+        chatInput.value = "";
+        updateTextCount();
+
         // 백엔드로 전송
         try {
             const formData = new URLSearchParams();
@@ -416,6 +475,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         titleElement.textContent = data.chat_title;
                     }
                 } else {
+                    const index = chatOrder.indexOf(chatId);
+                    if (index > 0) {
+                        chatOrder.splice(index, 1);
+                        chatOrder.unshift(chatId);
+                    }
                     if (!chatStore[chatId].backendChatId) {
                         chatStore[chatId].backendChatId = data.chat_id;
                     }
@@ -434,34 +498,158 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 chatStore[chatId].messages.push({
                     type: "user",
-                    text: data.user_message.content
+                    text: data.user_message.content,
+                    created_at: data.user_message.created_at
                 });
 
                 chatStore[chatId].messages.push({
                     type: "bot",
-                    text: data.assistant_message.content
+                    text: data.assistant_message.content,
+                    created_at: data.assistant_message.created_at
                 });
 
-                chatInput.value = "";
-                updateTextCount();
+                const tempBotMsg = document.getElementById(tempBotId);
+                if (tempBotMsg) {
+                    const textSpan = tempBotMsg.querySelector('.chat-message-text');
+                    if (textSpan) {
+                        textSpan.textContent = data.assistant_message.content;
+                    }
+                    tempBotMsg.removeAttribute('id');
+                }
 
                 renderHistory();
-                renderMessages(chatId);
 
                 if (typeof playTTS === 'function') {
                     playTTS(data.assistant_message.content);
                 }
 
             } else {
+                const tempBotMsg = document.getElementById(tempBotId);
+                if (tempBotMsg) {
+                    tempBotMsg.remove();
+                }
                 alert(data.error || '메시지 전송 실패');
             }
         } catch (error) {
             console.error('메시지 전송 오류:', error);
+            const tempBotMsg = document.getElementById(tempBotId);
+            if (tempBotMsg) {
+                tempBotMsg.remove();
+            }
             alert('메시지 전송 중 오류가 발생했습니다.');
         }
     }
 
     window.sendCurrentMessage = sendCurrentMessage;
+
+    async function sendMessageWithoutUI(message, tempBotId) {
+        let chatId = activeChatId;
+
+        try {
+            const formData = new URLSearchParams();
+            formData.append('content', message);
+            if (chatId && chatStore[chatId] && chatStore[chatId].backendChatId) {
+                formData.append('chat_id', chatStore[chatId].backendChatId);
+            }
+
+            const response = await fetch('/chat/api/message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            console.log('📡 백엔드 응답:', data);
+
+            if (data.ok) {
+                if (!chatId || !chatStore[chatId]) {
+                    chatId = makeChatId();
+                    chatStore[chatId] = {
+                        title: data.chat_title,
+                        messages: [],
+                        backendChatId: data.chat_id
+                    };
+                    chatOrder.unshift(chatId);
+                    activeChatId = chatId;
+
+                    window.history.pushState(
+                        { chatId: data.chat_id },
+                        '',
+                        `/chat/${data.chat_id}/`
+                    );
+
+                    const titleBar = document.querySelector('.chat-title-bar');
+                    const titleElement = document.getElementById('currentChatTitle');
+
+                    if (titleBar) {
+                        titleBar.classList.remove('hidden');
+                    }
+
+                    if (titleElement) {
+                        titleElement.textContent = data.chat_title;
+                    }
+                } else {
+                    const index = chatOrder.indexOf(chatId);
+                    if (index > 0) {
+                        chatOrder.splice(index, 1);
+                        chatOrder.unshift(chatId);
+                    }
+                }
+
+                chatStore[chatId].messages.push({
+                    type: "user",
+                    text: data.user_message.content,
+                    created_at: data.user_message.created_at
+                });
+
+                chatStore[chatId].messages.push({
+                    type: "bot",
+                    text: data.assistant_message.content,
+                    created_at: data.assistant_message.created_at
+                });
+
+                const tempBotMsg = document.getElementById(tempBotId);
+                if (tempBotMsg) {
+                    const textSpan = tempBotMsg.querySelector('.chat-message-text');
+                    if (textSpan) {
+                        textSpan.textContent = data.assistant_message.content;
+                    }
+                    tempBotMsg.removeAttribute('id');
+                }
+
+                const chatPreview = document.getElementById('voiceChatPreview');
+                const chatMessageArea = document.getElementById('chatMessageArea');
+                if (chatPreview && chatMessageArea) {
+                    chatPreview.innerHTML = chatMessageArea.innerHTML;
+                    chatPreview.scrollTop = chatPreview.scrollHeight;
+                }
+
+                renderHistory();
+
+                if (typeof playTTS === 'function') {
+                    playTTS(data.assistant_message.content);
+                }
+
+            } else {
+                const tempBotMsg = document.getElementById(tempBotId);
+                if (tempBotMsg) {
+                    tempBotMsg.remove();
+                }
+                alert(data.error || '메시지 전송 실패');
+            }
+        } catch (error) {
+            console.error('메시지 전송 오류:', error);
+            const tempBotMsg = document.getElementById(tempBotId);
+            if (tempBotMsg) {
+                tempBotMsg.remove();
+            }
+            alert('메시지 전송 중 오류가 발생했습니다.');
+        }
+    }
+
+    window.sendMessageWithoutUI = sendMessageWithoutUI;
 
     function renderRandomRecommendations() {
         if (!recommendList) return;
