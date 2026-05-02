@@ -29,6 +29,33 @@ def _build_model_history(chat):
         history.append({'role': role, 'content': log.content})
     return history
 
+
+def _request_model_answer(content, chat, history):
+    model_server_url = getattr(settings, 'MODEL_SERVER_URL', 'http://127.0.0.1:8001').rstrip('/')
+    timeout = getattr(settings, 'MODEL_SERVER_TIMEOUT', 60)
+    payload = {
+        'message': content,
+        'session_id': str(chat.chat_id),
+        'history': history,
+    }
+
+    request = Request(
+        f'{model_server_url}/ai/chat',
+        data=json.dumps(payload).encode('utf-8'),
+        headers={'Content-Type': 'application/json'},
+        method='POST',
+    )
+
+    with urlopen(request, timeout=timeout) as response:
+        data = json.loads(response.read().decode('utf-8'))
+
+    answer = data.get('answer', '').strip()
+    if not answer:
+        raise ValueError('Model server returned an empty answer.')
+
+    return answer
+
+
 @login_required
 def chat_index(request):
     return render(request, 'chat/chat_main.html')
@@ -70,10 +97,19 @@ def create_message(request):
     )
     
     # 응답 생성
-
-
-
-    assistant_content = "안녕하세요! F1 규정에 대해 물어보세요."
+    try:
+        assistant_content = _request_model_answer(content, chat, model_history)
+    except HTTPError as e:
+        error_body = e.read().decode('utf-8', errors='replace')
+        return JsonResponse({
+            "ok": False,
+            "error": f"Model server error: {e.code} {error_body}",
+        }, status=502)
+    except (URLError, TimeoutError, ValueError) as e:
+        return JsonResponse({
+            "ok": False,
+            "error": f"Cannot connect to model server: {str(e)}",
+        }, status=502)
 
     assistant_message = ChatLog.objects.create(
         chat=chat,
