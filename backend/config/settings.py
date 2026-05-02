@@ -55,10 +55,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'f1_db',
+        'USER': 'admin',
+        'PASSWORD': os.getenv('DB_PASSWORD'),  
+        'HOST': 'for-everyone.c3kmkqc4izcv.ap-northeast-2.rds.amazonaws.com',  
+        'PORT': '3306', 
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
