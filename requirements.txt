@@ -6,3 +6,11 @@ pydantic
 python-multipart
 requests
 gtts
+langchain-core
+langchain-text-splitters
+langchain-chroma
+langchain-huggingface
+langchain-openai
+sentence-transformers
+pandas
+pymupdf

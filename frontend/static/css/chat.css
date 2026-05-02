@@ -38,10 +38,7 @@ body {
     overflow: hidden;
     color: #ffffff;
 
-    background:
-        radial-gradient(circle at 63% 72%, rgba(255, 31, 22, 0.58), transparent 28%),
-        radial-gradient(circle at 36% 77%, rgba(255, 255, 255, 0.34), transparent 27%),
-        #000000;
+    /* background: url('../images/background.png') center center / cover no-repeat; */
 }
 
 /* 사이드바 */
