@@ -1,208 +1,323 @@
 import json
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, Callable
 
 from schemas import Citation
-from src.crawling import openf1, ergast
+from src.crawling import ergast, openf1
+
+
+def build_round_tool_properties() -> dict[str, Any]:
+    return {
+        "query": {"type": "string", "description": "The user's question."},
+        "year": {"type": "integer", "description": "Season year, for example 2024."},
+        "round": {"type": "integer", "description": "Round number in the season, for example 3."},
+    }
+
+
+EXTERNAL_API_TOOLS = [
+    {
+        "type": "function",
+        "name": "get_live_race",
+        "description": (
+            "Fetch current or latest F1 race context from OpenF1, including race position, "
+            "race control messages, championship snapshots, and meeting data."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_driver_standings",
+        "description": "Fetch F1 driver championship standings for a season from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The user's question."},
+                "year": {"type": "integer", "description": "Season year, for example 2024."},
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_constructor_standings",
+        "description": "Fetch F1 constructor championship standings for a season from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The user's question."},
+                "year": {"type": "integer", "description": "Season year, for example 2024."},
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_season_schedule",
+        "description": "Fetch the race schedule/calendar for an F1 season from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The user's question."},
+                "year": {"type": "integer", "description": "Season year, for example 2024."},
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_race_results",
+        "description": "Fetch race results for a specific F1 season round from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": build_round_tool_properties(),
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_qualifying_results",
+        "description": "Fetch qualifying results for a specific F1 season round from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": build_round_tool_properties(),
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_sprint_results",
+        "description": "Fetch sprint results for a specific F1 season round from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": build_round_tool_properties(),
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_pit_stops",
+        "description": "Fetch pit stop records for a specific F1 season round from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": build_round_tool_properties(),
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "get_lap_times",
+        "description": "Fetch lap timing records for a specific F1 season round from Jolpica/Ergast.",
+        "parameters": {
+            "type": "object",
+            "properties": build_round_tool_properties(),
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+]
 
 
 async def build_external_api_context(query: str) -> tuple[str, list[str]]:
-    """
-    사용자 질문을 보고 필요한 외부 API context를 조합
-
-    현재 구조:
-    - 실시간/현재 경기 질문 → OpenF1
-    - 시즌 순위/드라이버/컨스트럭터 질문 → Ergast/Jolpica
-    - 특정 라운드/GP 결과 질문 → Ergast/Jolpica
-    """
+    """질문 키워드로 필요한 외부 API를 미리 골라 context를 조합한다."""
+    tool_names = route_external_tools(query)
     contexts: list[str] = []
-    tools_used: list[str] = []
 
-    if needs_live_race(query):
-        live_context = await get_live_race_context()
-        contexts.append(format_context_block("get_live_race 결과", live_context))
-        tools_used.append("get_live_race")
-
-    if needs_round_race(query):
-        round_context = await get_round_race_context(query)
-        contexts.append(format_context_block("get_round_race 결과", round_context))
-        tools_used.append("get_round_race")
-
-    if needs_past_race(query):
-        past_context = await get_past_race_context(query)
-        contexts.append(format_context_block("get_past_race 결과", past_context))
-        tools_used.append("get_past_race")
+    for tool_name in tool_names:
+        result = await run_external_api_tool(tool_name, {"query": query}, query)
+        contexts.append(format_context_block(f"{tool_name} result", result))
 
     if not contexts:
         contexts.append(
             "외부 API 조회가 필요한 질문으로 판단되지 않았습니다. "
-            "일반적인 F1 개념 설명은 기본 지식으로 답변하세요."
+            "일반적인 F1 개념 설명은 모델의 기본 지식과 RAG를 우선 사용하세요."
         )
 
-    return "\n\n".join(contexts), tools_used
+    return "\n\n".join(contexts), tool_names
+
+
+async def run_external_api_tool(
+    tool_name: str,
+    arguments: dict[str, Any],
+    fallback_query: str,
+) -> dict[str, Any]:
+    query = str(arguments.get("query") or fallback_query)
+    year = parse_year(arguments.get("year"), query)
+    round_number = parse_round(arguments.get("round"), query)
+
+    handlers: dict[str, Callable[[], Any]] = {
+        "get_live_race": lambda: get_live_race_context(),
+        "get_driver_standings": lambda: get_driver_standings_context(year),
+        "get_constructor_standings": lambda: get_constructor_standings_context(year),
+        "get_season_schedule": lambda: get_season_schedule_context(year),
+        "get_race_results": lambda: get_round_context("get_race_results", year, round_number, ergast.get_results),
+        "get_qualifying_results": lambda: get_round_context(
+            "get_qualifying_results",
+            year,
+            round_number,
+            ergast.get_qualifying,
+        ),
+        "get_sprint_results": lambda: get_round_context("get_sprint_results", year, round_number, ergast.get_sprint),
+        "get_pit_stops": lambda: get_round_context("get_pit_stops", year, round_number, ergast.get_pitstops),
+        "get_lap_times": lambda: get_round_context("get_lap_times", year, round_number, ergast.get_laps),
+    }
+
+    handler = handlers.get(tool_name)
+    if handler is None:
+        return {
+            "tool": tool_name,
+            "error": "unknown_external_api_tool",
+        }
+
+    try:
+        return sanitize(await maybe_await(handler()))
+    except Exception as error:
+        return {
+            "tool": tool_name,
+            "error": f"{tool_name} failed",
+            "detail": str(error),
+        }
+
+
+async def maybe_await(value: Any) -> Any:
+    if hasattr(value, "__await__"):
+        return await value
+    return value
 
 
 async def get_live_race_context() -> dict[str, Any]:
-    try:
-        return sanitize(openf1.get_live_data(mode="basic"))
-    except Exception as error:
+    return {
+        "tool": "get_live_race",
+        "source": "OpenF1",
+        "context": openf1.get_live_data(mode="basic"),
+    }
+
+
+def get_driver_standings_context(year: int) -> dict[str, Any]:
+    return {
+        "tool": "get_driver_standings",
+        "source": "Jolpica Ergast API",
+        "year": year,
+        "driver_standings": ergast.get_driver_standings(year),
+    }
+
+
+def get_constructor_standings_context(year: int) -> dict[str, Any]:
+    return {
+        "tool": "get_constructor_standings",
+        "source": "Jolpica Ergast API",
+        "year": year,
+        "constructor_standings": ergast.get_constructor_standings(year),
+    }
+
+
+def get_season_schedule_context(year: int) -> dict[str, Any]:
+    return {
+        "tool": "get_season_schedule",
+        "source": "Jolpica Ergast API",
+        "year": year,
+        "races": ergast.get_races(year),
+    }
+
+
+def get_round_context(
+    tool_name: str,
+    year: int,
+    round_number: int | None,
+    fetcher: Callable[[int, int], Any],
+) -> dict[str, Any]:
+    if round_number is None:
         return {
-            "error": "get_live_race failed",
-            "detail": str(error),
-        }
-
-
-async def get_past_race_context(query: str) -> dict[str, Any]:
-    target_year = extract_year(query)
-
-    try:
-        return sanitize(
-            {
-                "year": target_year,
-                "driver_standings": ergast.get_driver_standings(target_year),
-                "constructor_standings": ergast.get_constructor_standings(target_year),
-            }
-        )
-    except Exception as error:
-        return {
-            "error": "get_past_race failed",
-            "year": target_year,
-            "detail": str(error),
-        }
-
-
-async def get_round_race_context(query: str) -> dict[str, Any]:
-    target_year = extract_year(query)
-    target_round = extract_round(query)
-
-    if target_round is None:
-        return {
+            "tool": tool_name,
             "error": "round_not_found",
-            "message": (
-                "질문에서 라운드 번호를 찾을 수 없습니다. "
-                "예: '2024년 3라운드 결과 알려줘'처럼 질문하면 조회할 수 있습니다."
-            ),
-            "year": target_year,
+            "year": year,
+            "message": "질문에서 라운드 번호를 찾지 못했습니다. 예: 2024년 3라운드 결과",
         }
 
-    try:
-        return sanitize(
-            {
-                "year": target_year,
-                "round": target_round,
-                "round_data": ergast.get_round_data(target_year, target_round),
-            }
-        )
-    except Exception as error:
-        return {
-            "error": "get_round_race failed",
-            "year": target_year,
-            "round": target_round,
-            "detail": str(error),
-        }
+    return {
+        "tool": tool_name,
+        "source": "Jolpica Ergast API",
+        "year": year,
+        "round": round_number,
+        "data": fetcher(year, round_number),
+    }
+
+
+def route_external_tools(query: str) -> list[str]:
+    """질문 키워드 기반의 보조 라우터다. agent tool 선택 실패를 줄이는 용도로 쓴다."""
+    q = query.lower()
+    tool_names: list[str] = []
+
+    keyword_routes = [
+        ("get_live_race", ["실시간", "라이브", "현재 경기", "지금 경기", "live", "current race"]),
+        ("get_driver_standings", ["드라이버 순위", "driver standing", "driver standings"]),
+        ("get_constructor_standings", ["컨스트럭터", "constructor", "constructors", "팀 순위"]),
+        ("get_season_schedule", ["일정", "캘린더", "calendar", "schedule"]),
+        ("get_qualifying_results", ["예선", "퀄리파잉", "qualifying"]),
+        ("get_sprint_results", ["스프린트", "sprint"]),
+        ("get_pit_stops", ["피트스톱", "피트 스톱", "pit stop", "pit stops"]),
+        ("get_lap_times", ["랩타임", "랩 타임", "lap time", "lap times", "laps"]),
+        ("get_race_results", ["결과", "결승", "race result", "race results", "round"]),
+    ]
+
+    for tool_name, keywords in keyword_routes:
+        if any(keyword in q for keyword in keywords):
+            tool_names.append(tool_name)
+
+    return dedupe(tool_names)
 
 
 def build_external_api_citations(tool_names: list[str]) -> list[Citation]:
     citations: list[Citation] = []
 
-    for tool_name in tool_names:
-        if tool_name == "get_live_race":
-            citations.append(
-                Citation(
-                    title="OpenF1 Live Race Data",
-                    source="OpenF1",
-                )
-            )
-
-        elif tool_name in ["get_past_race", "get_round_race"]:
-            citations.append(
-                Citation(
-                    title="Ergast/Jolpica F1 Historical Data",
-                    source="Jolpica Ergast API",
-                )
-            )
+    for source in dedupe(get_tool_source(tool_name) for tool_name in tool_names):
+        if source == "OpenF1":
+            citations.append(Citation(title="OpenF1 Live Race Data", source="OpenF1"))
+        elif source == "Jolpica Ergast API":
+            citations.append(Citation(title="Jolpica Ergast F1 Data", source="Jolpica Ergast API"))
 
     return citations
 
 
-def needs_live_race(query: str) -> bool:
-    q = query.lower()
-
-    keywords = [
-        "실시간",
-        "라이브",
-        "현재 경기",
-        "지금 경기",
-        "현재 레이스",
-        "지금 레이스",
-        "현재 세션",
-        "지금 세션",
-        "live",
-        "current race",
-        "current session",
-    ]
-
-    return any(keyword in q for keyword in keywords)
+def get_tool_source(tool_name: str) -> str:
+    if tool_name == "get_live_race":
+        return "OpenF1"
+    return "Jolpica Ergast API"
 
 
-def needs_past_race(query: str) -> bool:
-    q = query.lower()
+def parse_year(value: Any, query: str) -> int:
+    if isinstance(value, int):
+        return value
 
-    keywords = [
-        "순위",
-        "스탠딩",
-        "standing",
-        "standings",
-        "챔피언십",
-        "championship",
-        "드라이버 순위",
-        "컨스트럭터",
-        "constructor",
-        "constructors",
-        "소속",
-        "team",
-        "팀",
-        "시즌 기록",
-    ]
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
 
-    return any(keyword in q for keyword in keywords)
-
-
-def needs_round_race(query: str) -> bool:
-    q = query.lower()
-
-    keywords = [
-        "라운드",
-        "round",
-        "gp",
-        "그랑프리",
-        "결과",
-        "우승자",
-        "예선",
-        "퀄리파잉",
-        "qualifying",
-        "스프린트",
-        "sprint",
-        "결승",
-        "race result",
-    ]
-
-    return any(keyword in q for keyword in keywords)
-
-
-def extract_year(query: str) -> int:
     match = re.search(r"20\d{2}", query)
-
     if match:
         return int(match.group())
 
     return datetime.now().year
 
 
-def extract_round(query: str) -> int | None:
-    q = query.lower()
+def parse_round(value: Any, query: str) -> int | None:
+    if isinstance(value, int):
+        return value
 
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+
+    q = query.lower()
     patterns = [
         r"라운드\s*(\d+)",
         r"(\d+)\s*라운드",
@@ -245,3 +360,7 @@ def format_context_block(title: str, data: Any) -> str:
 [{title}]
 {body}
 """
+
+
+def dedupe(items: list[str]) -> list[str]:
+    return list(dict.fromkeys(items))

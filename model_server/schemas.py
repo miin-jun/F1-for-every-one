@@ -18,7 +18,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-    mode: Literal["mock", "openai", "rag", "agent"]
+    mode: Literal["agent"]
     tool_used: bool = False
     citations: list[Citation] = []
     metadata: dict = {}

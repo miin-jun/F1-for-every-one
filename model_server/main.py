@@ -29,9 +29,8 @@ def health_check():
     return {
         "status": "ok",
         "service": "model_server",
-        "ai_mode": Settings.AI_MODE,
-        "stt_mode": Settings.STT_MODE,
-        "tts_mode": Settings.TTS_MODE,
+        "pipeline": "agent",
+        "model": Settings.OPENAI_MODEL,
     }
 
 
