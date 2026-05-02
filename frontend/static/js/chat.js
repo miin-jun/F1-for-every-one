@@ -123,7 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     chatStore[chatId].messages = data.messages.map(function(msg) {
                         return {
                             type: msg.role === 'user' ? 'user' : 'bot',
-                            text: msg.content
+                            text: msg.content,
+                            created_at: msg.created_at
                         };
                     });
                 }
@@ -204,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${hours}:${minutes}`;
     }
 
-    function addMessageElement(type, text) {
+    function addMessageElement(type, text, timestamp) {
         if (!chatMessageArea) return;
 
         const message = document.createElement("div");
@@ -216,7 +217,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const timeSpan = document.createElement("span");
         timeSpan.className = "chat-message-time";
-        timeSpan.textContent = getCurrentTime();
+        // timeSpan.textContent = getCurrentTime();
+
+        const date = new Date(timestamp);
+        const today = new Date();
+        const isToday = date.getDate() === today.getDate() &&
+                        date.getMonth() === today.getMonth() &&
+                        date.getFullYear() === today.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        if (isToday) {
+            timeSpan.textContent = `${hours}:${minutes}`;
+        } else {
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            timeSpan.textContent = `${month}-${day} ${hours}:${minutes}`;
+        }
 
         message.appendChild(textSpan);
         message.appendChild(timeSpan);
@@ -250,7 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
         hideRecommendSection();
 
         chat.messages.forEach(function (message) {
-            addMessageElement(message.type, message.text);
+            addMessageElement(message.type, message.text, message.created_at);
         });
     }
 
@@ -416,6 +434,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         titleElement.textContent = data.chat_title;
                     }
                 } else {
+                    const index = chatOrder.indexOf(chatId);
+                    if (index > 0) {  // 맨 위가 아니면
+                        chatOrder.splice(index, 1);  // 제거
+                        chatOrder.unshift(chatId);   // 맨 앞에 추가
+                    }
                     if (!chatStore[chatId].backendChatId) {
                         chatStore[chatId].backendChatId = data.chat_id;
                     }
@@ -434,12 +457,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 chatStore[chatId].messages.push({
                     type: "user",
-                    text: data.user_message.content
+                    text: data.user_message.content,
+                    created_at: data.user_message.created_at
                 });
 
                 chatStore[chatId].messages.push({
                     type: "bot",
-                    text: data.assistant_message.content
+                    text: data.assistant_message.content,
+                    created_at: data.assistant_message.created_at
                 });
 
                 chatInput.value = "";

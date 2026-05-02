@@ -18,6 +18,11 @@ let analyser = null;
 let silenceDetectionInterval = null; 
 
 function stopRecordingAndCleanup() {
+    const circleAnimation = document.querySelector('.voice-circle-animation');
+    if (circleAnimation) {
+        circleAnimation.classList.remove('recording');
+    }
+
     if (silenceTimeout) {
         clearTimeout(silenceTimeout);
         silenceTimeout = null;
@@ -173,6 +178,11 @@ function startRecording() {
         .then(stream => {
             currentStream = stream; 
 
+            const circleAnimation = document.querySelector('.voice-circle-animation');
+            if (circleAnimation) {
+                circleAnimation.classList.add('recording');
+            }
+
             mediaRecorder = new MediaRecorder(stream);
 
             mediaRecorder.ondataavailable = (event) => {
@@ -241,6 +251,11 @@ function setupSilenceDetection(stream) {
             if (silenceDuration >= SILENCE_DURATION && !silenceTimeout) {
                 console.log('5초 무음 감지, 자동 종료');
                 
+                const circleAnimation = document.querySelector('.voice-circle-animation');
+                if (circleAnimation) {
+                    circleAnimation.classList.remove('recording');
+                }
+
                 if (timerInterval) {
                     clearInterval(timerInterval);
                     timerInterval = null;
@@ -396,6 +411,11 @@ async function playTTS(text) {
         return;
     }
     console.log('🔊 TTS 시작:', text);
+    
+    const circleAnimation = document.querySelector('.voice-circle-animation');
+    if (circleAnimation) {
+        circleAnimation.classList.remove('recording');
+    }
     
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                      document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
