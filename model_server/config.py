@@ -1,15 +1,14 @@
 import sys
 from pathlib import Path
-
-current_file = Path(__file__).resolve()
-model_server_dir = current_file.parent.parent.parent  # rag -> src -> model_server
-sys.path.insert(0, str(model_server_dir))
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+
+current_file = Path(__file__).resolve()
+model_server_dir = current_file.parent.parent.parent  # rag -> src -> model_server
+sys.path.insert(0, str(model_server_dir))
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -46,6 +45,6 @@ class Settings:
     OPENAI_TTS_MODEL: str = os.getenv("OPENAI_TTS_MODEL", "mock")
     OPENAI_TTS_VOICE: str = os.getenv("OPENAI_TTS_VOICE", "mock")
 
-    FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+    FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://127.0.0.1:8000")
 
 settings = Settings()
