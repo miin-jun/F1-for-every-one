@@ -24,7 +24,7 @@ def get_embedding_model():
             model_kwargs={"device": "cpu"},
             encode_kwargs={
                 "normalize_embeddings": True,
-                "prompt": "passage: ",
+                "prompt": "query: ",
             },
         )
 
@@ -170,10 +170,8 @@ def hybrid_search_documents(query: str, translated_query: str, k: int = 20):
     keyword_k = getattr(Settings, "HYBRID_KEYWORD_K", k)
     rrf_k = getattr(Settings, "HYBRID_RRF_K", 60)
 
-    search_query = "query: " + translated_query
-
     # 1. Dense vector search
-    dense_docs = vector_store.similarity_search(search_query, k=dense_k)
+    dense_docs = vector_store.similarity_search(translated_query, k=dense_k)
 
     # 2. Keyword search
     # 영어 번역 쿼리 + 원래 한국어 질문을 같이 넣음
@@ -252,7 +250,6 @@ def get_reranker():
 def search_regulations_with_debug(query: str, k: int = 10) -> dict:
     vector_store = get_vector_store()
     translated_query = translate_query(query)
-    search_query = "query: " + translated_query
 
     # 리랭커 사용 여부에 따라 후보 문서 수를 넉넉하게 가져옴
     initial_k = k * 3 if Settings.USE_RERANKER else k
@@ -266,7 +263,7 @@ def search_regulations_with_debug(query: str, k: int = 10) -> dict:
         )
         retrieval_mode = "hybrid"
     else:
-        docs = vector_store.similarity_search(search_query, k=initial_k)
+        docs = vector_store.similarity_search(translated_query, k=initial_k)
         retrieval_mode = "dense"
 
     # 리랭커 적용
