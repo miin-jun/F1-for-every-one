@@ -15,12 +15,28 @@ let currentStream = null;
 let silenceTimeout = null; 
 let audioContext = null; 
 let analyser = null;
-let silenceDetectionInterval = null; 
+let silenceDetectionInterval = null;
+let currentAudio = null;  
 
 function stopRecordingAndCleanup() {
     const circleAnimation = document.querySelector('.voice-circle-animation');
     if (circleAnimation) {
         circleAnimation.classList.remove('recording');
+    }
+
+    if (currentAudio) {
+        // currentAudio.pause();
+        // currentAudio.currentTime = 0;
+        // currentAudio = null;
+        try {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio.src = '';
+            currentAudio.load();
+        } catch (e) {
+            console.log('Audio cleanup error:', e);
+        }
+        currentAudio = null;
     }
 
     if (silenceTimeout) {
@@ -276,13 +292,12 @@ function setupSilenceDetection(stream) {
                     currentStream.getTracks().forEach(track => track.stop());
                     currentStream = null;
                 }
-                
+
                 if (audioContext) {
                     audioContext.close();
                     audioContext = null;
                     analyser = null;
                 }
-
                 resetTimer();
                 showError('음성이 감지되지 않았습니다. 다시 시도해주세요.');
             }
@@ -363,44 +378,61 @@ async function transcribeAudio(audioBlob) {
             body: formData
         });
 
-        console.log('응답 상태:', response.status);
         const data = await response.json();
-        console.log('응답 데이터:', data);
 
         if (data.ok) {
             console.log('✅ STT 성공! 텍스트:', data.text);
 
             if (!data.text || data.text.trim() === '') {
-                console.warn('⚠️ 음성이 인식되지 않았습니다');
                 resetTimer();
                 showError('음성이 인식되지 않았습니다. 다시 시도해주세요.');
                 return;
             }
             
-            // STT 성공
-            if (chatInput) {
-                chatInput.value = data.text;
-                if (typeof updateTextCount === 'function') {
-                    updateTextCount();
-                }
+            // 1. 유저 메시지 UI 표시
+            const userTimestamp = new Date().toISOString();
+            console.log('1️⃣ 유저 메시지 표시 시작');
+            addMessageElement('user', data.text, userTimestamp);
+            console.log('2️⃣ 유저 메시지 표시 완료');
+
+            if (chatIntro) {
+                chatIntro.classList.add('hidden');
+            }
+            
+            const recommendSection = document.getElementById('recommendSection');
+            if (recommendSection) {
+                recommendSection.classList.add('hidden');
             }
 
-            isVoiceMode = true;
-            
-            // 자동 전송
-            if (typeof sendCurrentMessage === 'function') {
-                sendCurrentMessage();
+            // 2. 봇 "답변 생성 중..." 표시
+            const tempBotId = 'temp-bot-' + Date.now();
+            console.log('3️⃣ 봇 메시지 표시 시작');
+            addMessageElement('bot', '답변 생성 중...', userTimestamp, tempBotId);
+            console.log('4️⃣ 봇 메시지 표시 완료');
+
+            const chatPreview = document.getElementById('voiceChatPreview');
+            const chatMessageArea = document.getElementById('chatMessageArea');
+            if (chatPreview && chatMessageArea) {
+                chatPreview.innerHTML = chatMessageArea.innerHTML;
+                chatPreview.scrollTop = chatPreview.scrollHeight;
             }
+
+            await new Promise(resolve => setTimeout(resolve, 50));  // 브라우저에게 화면 업데이트 기회 줌 => 모델 연결 후 50을 0으로 교체할 것
+            console.log('화면 업데이트 대기 완료');
+
+            // 3. 백엔드 요청
+            isVoiceMode = true;
+            console.log('5️⃣ 백엔드 요청 시작');
+            await sendMessageWithoutUI(data.text, tempBotId);
+            console.log('6️⃣ 백엔드 응답 완료');
             
         } else {
-            // STT 실패
             console.error('❌ STT 실패:', data.error);
             resetTimer();
             showError('음성 인식에 실패했습니다. 다시 시도해주세요.');
         }
     } catch (error) {
         console.error('❌ 음성 인식 오류:', error);
-        // STT 실패 
         resetTimer();
         showError('음성 인식에 실패했습니다. 다시 시도해주세요.');
     }
@@ -410,6 +442,12 @@ async function playTTS(text) {
     if (!isVoiceMode) {
         return;
     }
+
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+
     console.log('🔊 TTS 시작:', text);
     
     const circleAnimation = document.querySelector('.voice-circle-animation');
@@ -434,9 +472,11 @@ async function playTTS(text) {
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
+            currentAudio = audio;
             
             audio.onended = () => {
                 console.log('✅ TTS 재생 완료');
+                currentAudio = null;
 
                 const chatPreview = document.getElementById('voiceChatPreview');
                 const chatMessageArea = document.getElementById('chatMessageArea');
@@ -445,7 +485,6 @@ async function playTTS(text) {
                     chatPreview.innerHTML = chatMessageArea.innerHTML;
                     chatPreview.scrollTop = chatPreview.scrollHeight;
                 }
-
                 resetTimer();
 
                 isVoiceMode = true;
@@ -453,6 +492,7 @@ async function playTTS(text) {
             
             audio.onerror = (e) => {
                 console.error('❌ TTS 재생 오류:', e);
+                currentAudio = null;
                 resetTimer();
             };
             
