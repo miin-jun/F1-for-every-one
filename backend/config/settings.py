@@ -6,7 +6,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-chj3_b_8@j09hb!$i#x*0#&fg+vs%jvevvhoi$s44^e)#kglb*"
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 DEBUG = True
 
@@ -96,3 +96,6 @@ CACHES = {
 # 인증
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/chat/'
+
+MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
+MODEL_SERVER_TIMEOUT = int(os.getenv('MODEL_SERVER_TIMEOUT', '60'))
