@@ -48,7 +48,7 @@ body {
     width: 250px;
     min-width: 250px;
     height: 100vh;
-    padding: 28px 28px 20px;
+    padding: 20px 20px 20px;
 
     display: flex;
     flex-direction: column;
@@ -65,13 +65,19 @@ body {
 .chat-sidebar.collapsed {
     width: 60px;
     min-width: 60px;
-    padding: 28px 0 20px;
+    padding: 20px 0 20px;
 }
 
 .sidebar-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    /* 추가 */
+    height: 28px;  /* 높이 고정 */
+    min-height: 28px;
+
+    padding-top: 8px; 
 }
 
 .sidebar-logo {
@@ -135,6 +141,11 @@ body {
 
     font-size: 13px;
     cursor: pointer;
+
+    height: 22px;  /* 높이 고정 */
+    min-height: 22px;
+
+    padding-left: 0;
 }
 
 .plus-circle-svg {
@@ -186,9 +197,8 @@ body {
 }
 
 .history-more-btn {
-
     position: absolute;
-    right: 0;
+    right: -4px;
 
     width: 20px;
     height: 28px;
@@ -209,7 +219,7 @@ body {
 
 .history-delete-btn {
     position: absolute;
-    right: 30px; 
+    right: 22px; 
     
     width: 20px;
     height: 28px;
@@ -291,6 +301,8 @@ body {
     appearance: none;
     width: 12px;
     height: 12px;
+    min-width: 12px;
+    flex-shrink: 0;
 
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.75);
@@ -311,12 +323,17 @@ body {
     content: "✓";
 
     position: absolute;
-    top: -3px;
+    top: -1px;
     left: 2px;
 
     color: #ffffff;
     font-size: 10px;
     font-weight: 700;
+}
+
+.history-title.active {
+    color: #ffffff;
+    font-weight: 600;
 }
 
 /* 사이드바 닫힘 상태 */
@@ -331,10 +348,11 @@ body {
 
 .chat-sidebar.collapsed .new-chat-btn {
     width: 100%;
-    margin-top: 34px;
+    margin-top: 36px;
 
     justify-content: center;
     padding: 8px 0;
+    padding-left: 0;
 }
 
 .chat-sidebar.collapsed .new-chat-text {
@@ -572,7 +590,7 @@ body {
 
     overflow: hidden;
 
-    max-width: 1400px;
+    /* max-width: 1400px; */
 }
 
 .chat-intro {
@@ -616,14 +634,15 @@ body {
     font-weight: 500;
 }
 
-/* 채팅 메시지 영역 */
-
+/* 스크롤 가능 영역(채팅 메시지) 영역 */
 .chat-scroll-area {
     position: absolute;
 
     top: 60px;
-    left: 0;
-    right: 0;  
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 100%;
     bottom: 155px;
 
     padding: 0;
@@ -728,17 +747,16 @@ body {
 }
 
 /* 추천 질문 */
-
 .recommend-section {
-    position: absolute;
+    position: fixed;
 
-    left: 50%;
-    transform: translateX(-50%);
+    left: 250px;
+    right: 0;
     
-    width: 100%;
-    max-width: 1200px;
-    bottom: 150px;
+    margin: 0 auto;
+    max-width: 1400px;
 
+    bottom: calc(4vh + 100px);
     padding: 0 42px;
 }
 
@@ -779,16 +797,15 @@ body {
 }
 
 /* 입력창 */
-
 .chat-input-area {
-    position: absolute;
+    position: fixed;
 
-    left: 50%;
-    transform: translateX(-50%);
+    left: 250px;
+    right: 0;
     
-    width: 100%;
-    max-width: 1200px;
-    bottom: 34px;
+    margin: 0 auto;
+    max-width: 1400px;
+    bottom: 2vh;
 
     padding: 0 42px;
 
@@ -951,6 +968,56 @@ body {
     justify-content: center;
 }
 
+.voice-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    width: 76px;
+    height: 76px;
+    
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    
+    opacity: 0;  /* ← 기본은 안 보임 */
+    animation: none;  /* ← 기본은 애니메이션 없음 */
+}
+
+/* 녹음 중일 때만 애니메이션 */
+.voice-circle-animation.recording .voice-circle {
+    animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.voice-circle-animation.recording .voice-circle-1 {
+    animation-delay: 0s;
+}
+
+.voice-circle-animation.recording .voice-circle-2 {
+    animation-delay: 0.6s;
+}
+
+.voice-circle-animation.recording .voice-circle-3 {
+    animation-delay: 1.2s;
+}
+
+@keyframes pulse-ring {
+    0% {
+        width: 76px;
+        height: 76px;
+        opacity: 1;
+    }
+    100% {
+        width: 220px;
+        height: 220px;
+        opacity: 0;
+    }
+}
+
+.voice-circle-animation:not(.recording) .voice-circle {
+    display: none;
+}
+
 .voice-mic-center {
     position: relative;
     z-index: 5;
@@ -1023,7 +1090,7 @@ body {
     width:100%;
 }
 
-.voice-back-btn {
+/* .voice-back-btn {
     position: absolute;
     left: 50%;
     bottom: -20px;
@@ -1040,6 +1107,39 @@ body {
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+} */
+
+
+
+.voice-back-btn {
+    position: absolute;
+    left: 50%;
+    bottom: -30px;
+    transform: translateX(-50%);
+    
+    width: auto;
+    white-space: nowrap;
+    
+    border: none;
+    background: transparent;
+    padding: 0;
+    
+    color: rgba(255, 255, 255, 0.65);
+    
+    font-size: 11px;
+    font-weight: 400;
+    text-decoration: underline;
+    
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.voice-back-btn:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.voice-back-btn::before {
+    content: "⮌ ";
 }
 
 /* 공통 */
