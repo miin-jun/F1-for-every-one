@@ -5,6 +5,7 @@ __pycache__
 *.pyc
 *.pyo
 *.pyd
+*.pem
 
 backend/db.sqlite3
 backend/.env
@@ -12,7 +13,7 @@ model_server/.env
 
 .venv
 venv
-env
+.env
 django_env
 node_modules
 dist
