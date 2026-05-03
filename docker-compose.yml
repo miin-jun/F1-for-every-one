@@ -1,27 +1,51 @@
+# services:
+#   backend:
+#     build:
+#       context: .
+#       dockerfile: backend/Dockerfile
+#     container_name: f1-backend
+#     env_file:
+#       - ./backend/.env
+#     environment:
+#       MODEL_SERVER_URL: http://model_server:8000
+#       MODEL_SERVER_TIMEOUT: 60
+#     ports:
+#       - "8001:8000"
+#     depends_on:
+#       - model_server
+#     restart: unless-stopped
+
+#   model_server:
+#     build:
+#       context: .
+#       dockerfile: model_server/Dockerfile
+#     container_name: f1-model-server
+#     env_file:
+#       - ./model_server/.env
+#     ports:
+#       - "8002:8000"
+#     restart: unless-stopped
+
+
+# 아래가 도커 배포할 때 사용한 코드
 services:
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    image: lifeisgoodlg/f1-backend:latest
     container_name: f1-backend
     env_file:
-      - ./backend/.env
+      - ./backend.env
     environment:
       MODEL_SERVER_URL: http://model_server:8000
       MODEL_SERVER_TIMEOUT: 60
     ports:
-      - "8001:8000"
+      - "80:8000"
     depends_on:
       - model_server
     restart: unless-stopped
 
   model_server:
-    build:
-      context: .
-      dockerfile: model_server/Dockerfile
+    image: lifeisgoodlg/f1-model-server:latest
     container_name: f1-model-server
     env_file:
-      - ./model_server/.env
-    ports:
-      - "8002:8000"
+      - ./model_server.env
     restart: unless-stopped
