@@ -99,6 +99,23 @@ if (voiceMicCenter) {
     voiceMicCenter.addEventListener('click', function() {
         // 녹음 중 -> 중지하고 STT 처리
         if (mediaRecorder && mediaRecorder.state === 'recording') {
+
+            const circleAnimation = document.querySelector('.voice-circle-animation');
+            if (circleAnimation) {
+                circleAnimation.classList.remove('recording');
+            }
+            
+            // ⭐ 타이머 즉시 정지
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // ⭐ "처리 중" 표시
+            // if (voiceTimer) {
+            //     voiceTimer.textContent = '처리 중...';
+            // }
+
             stopRecordingAndSend();
         } else {
             // 재시작
@@ -181,10 +198,10 @@ function stopRecordingAndSend() {
         return;
     }
     
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
+    // if (timerInterval) {
+    //     clearInterval(timerInterval);
+    //     timerInterval = null;
+    // }
     
     if (silenceDetectionInterval) {
         clearInterval(silenceDetectionInterval);
@@ -500,7 +517,9 @@ async function playTTS(text) {
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
             currentAudio = audio;
-            
+             
+            audio.playbackRate = 1.3; // 1.3배속
+
             audio.onended = () => {
                 console.log('✅ TTS 재생 완료');
                 currentAudio = null;
