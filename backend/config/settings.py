@@ -115,3 +115,8 @@ LOGIN_REDIRECT_URL = '/chat/'
 
 MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
 MODEL_SERVER_TIMEOUT = int(os.getenv('MODEL_SERVER_TIMEOUT', '60'))
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev',
+]
