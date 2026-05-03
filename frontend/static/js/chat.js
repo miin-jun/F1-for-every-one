@@ -412,6 +412,40 @@ document.addEventListener("DOMContentLoaded", function () {
         let chatId = activeChatId;
 
         const userTimestamp = new Date().toISOString();
+
+
+        if (!chatId || !chatStore[chatId]) {
+            chatId = makeChatId();
+            const tempTitle = makeShortTitle(message);
+            chatStore[chatId] = {
+                title: tempTitle,
+                messages: [],
+                backendChatId: null
+            };
+            chatOrder.unshift(chatId);
+            activeChatId = chatId;
+
+            const titleBar = document.querySelector('.chat-title-bar');
+            const titleElement = document.getElementById('currentChatTitle');
+
+            if (titleBar) {
+                titleBar.classList.remove('hidden');
+            }
+
+            if (titleElement) {
+                titleElement.textContent = tempTitle;
+            }
+
+            renderHistory();
+        } else {
+            const index = chatOrder.indexOf(chatId);
+            if (index > 0) {
+                chatOrder.splice(index, 1);
+                chatOrder.unshift(chatId);
+            }
+            renderHistory();
+        }
+
         addMessageElement('user', message, userTimestamp, null);
         
         if (chatIntro) {
@@ -446,17 +480,18 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
+            
+            
 
             if (data.ok) {
-                if (!chatId || !chatStore[chatId]) {
-                    chatId = makeChatId();
-                    chatStore[chatId] = {
-                        title: data.chat_title,
-                        messages: [],
-                        backendChatId: data.chat_id
-                    };
-                    chatOrder.unshift(chatId);
-                    activeChatId = chatId;
+                if (chatStore[chatId]) {
+                    chatStore[chatId].title = data.chat_title;
+                    chatStore[chatId].backendChatId = data.chat_id;
+
+                    const titleElement = document.getElementById('currentChatTitle');
+                    if (titleElement) {
+                        titleElement.textContent = data.chat_title;
+                    }
 
                     window.history.pushState(
                         { chatId: data.chat_id },
@@ -464,36 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         `/chat/${data.chat_id}/`
                     );
 
-                    const titleBar = document.querySelector('.chat-title-bar');
-                    const titleElement = document.getElementById('currentChatTitle');
-
-                    if (titleBar) {
-                        titleBar.classList.remove('hidden');
-                    }
-
-                    if (titleElement) {
-                        titleElement.textContent = data.chat_title;
-                    }
-                } else {
-                    const index = chatOrder.indexOf(chatId);
-                    if (index > 0) {
-                        chatOrder.splice(index, 1);
-                        chatOrder.unshift(chatId);
-                    }
-                    if (!chatStore[chatId].backendChatId) {
-                        chatStore[chatId].backendChatId = data.chat_id;
-                    }
-
-                    window.history.replaceState(
-                        { chatId: chatStore[chatId].backendChatId },
-                        '',
-                        `/chat/${chatStore[chatId].backendChatId}/`
-                    );
-
-                    const titleBar = document.querySelector('.chat-title-bar');
-                    if (titleBar) {
-                        titleBar.classList.remove('hidden');
-                    }
+                    renderHistory();
                 }
 
                 chatStore[chatId].messages.push({
@@ -507,6 +513,67 @@ document.addEventListener("DOMContentLoaded", function () {
                     text: data.assistant_message.content,
                     created_at: data.assistant_message.created_at
                 });
+
+            // if (data.ok) {
+            //     if (!chatId || !chatStore[chatId]) {
+            //         chatId = makeChatId();
+            //         chatStore[chatId] = {
+            //             title: data.chat_title,
+            //             messages: [],
+            //             backendChatId: data.chat_id
+            //         };
+            //         chatOrder.unshift(chatId);
+            //         activeChatId = chatId;
+
+            //         window.history.pushState(
+            //             { chatId: data.chat_id },
+            //             '',
+            //             `/chat/${data.chat_id}/`
+            //         );
+
+            //         const titleBar = document.querySelector('.chat-title-bar');
+            //         const titleElement = document.getElementById('currentChatTitle');
+
+            //         if (titleBar) {
+            //             titleBar.classList.remove('hidden');
+            //         }
+
+            //         if (titleElement) {
+            //             titleElement.textContent = data.chat_title;
+            //         }
+            //     } else {
+            //         const index = chatOrder.indexOf(chatId);
+            //         if (index > 0) {
+            //             chatOrder.splice(index, 1);
+            //             chatOrder.unshift(chatId);
+            //         }
+            //         if (!chatStore[chatId].backendChatId) {
+            //             chatStore[chatId].backendChatId = data.chat_id;
+            //         }
+
+            //         window.history.replaceState(
+            //             { chatId: chatStore[chatId].backendChatId },
+            //             '',
+            //             `/chat/${chatStore[chatId].backendChatId}/`
+            //         );
+
+            //         const titleBar = document.querySelector('.chat-title-bar');
+            //         if (titleBar) {
+            //             titleBar.classList.remove('hidden');
+            //         }
+            //     }
+
+            //     chatStore[chatId].messages.push({
+            //         type: "user",
+            //         text: data.user_message.content,
+            //         created_at: data.user_message.created_at
+            //     });
+
+            //     chatStore[chatId].messages.push({
+            //         type: "bot",
+            //         text: data.assistant_message.content,
+            //         created_at: data.assistant_message.created_at
+            //     });
 
                 const tempBotMsg = document.getElementById(tempBotId);
                 if (tempBotMsg) {
@@ -545,6 +612,39 @@ document.addEventListener("DOMContentLoaded", function () {
     async function sendMessageWithoutUI(message, tempBotId) {
         let chatId = activeChatId;
 
+        if (!chatId || !chatStore[chatId]) {
+            chatId = makeChatId();
+            const tempTitle = makeShortTitle(message);
+            chatStore[chatId] = {
+                title: tempTitle,
+                messages: [],
+                backendChatId: null
+            };
+            chatOrder.unshift(chatId);
+            activeChatId = chatId;
+
+            const titleBar = document.querySelector('.chat-title-bar');
+            const titleElement = document.getElementById('currentChatTitle');
+
+            if (titleBar) {
+                titleBar.classList.remove('hidden');
+            }
+
+            if (titleElement) {
+                titleElement.textContent = tempTitle;
+            }
+
+            renderHistory();
+        } else {
+            const index = chatOrder.indexOf(chatId);
+            if (index > 0) {
+                chatOrder.splice(index, 1);
+                chatOrder.unshift(chatId);
+            }
+            renderHistory();
+        }
+
+
         try {
             const formData = new URLSearchParams();
             formData.append('content', message);
@@ -561,41 +661,60 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
-            console.log('📡 백엔드 응답:', data);
+            console.log('백엔드 응답:', data);
 
+            
+            // if (data.ok) {
+            //     if (!chatId || !chatStore[chatId]) {
+            //         chatId = makeChatId();
+            //         chatStore[chatId] = {
+            //             title: data.chat_title,
+            //             messages: [],
+            //             backendChatId: data.chat_id
+            //         };
+            //         chatOrder.unshift(chatId);
+            //         activeChatId = chatId;
+
+            //         window.history.pushState(
+            //             { chatId: data.chat_id },
+            //             '',
+            //             `/chat/${data.chat_id}/`
+            //         );
+
+            //         const titleBar = document.querySelector('.chat-title-bar');
+            //         const titleElement = document.getElementById('currentChatTitle');
+
+            //         if (titleBar) {
+            //             titleBar.classList.remove('hidden');
+            //         }
+
+            //         if (titleElement) {
+            //             titleElement.textContent = data.chat_title;
+            //         }
+            //     } else {
+            //         const index = chatOrder.indexOf(chatId);
+            //         if (index > 0) {
+            //             chatOrder.splice(index, 1);
+            //             chatOrder.unshift(chatId);
+            //         }
+            //     }
+    
             if (data.ok) {
-                if (!chatId || !chatStore[chatId]) {
-                    chatId = makeChatId();
-                    chatStore[chatId] = {
-                        title: data.chat_title,
-                        messages: [],
-                        backendChatId: data.chat_id
-                    };
-                    chatOrder.unshift(chatId);
-                    activeChatId = chatId;
+                if (chatStore[chatId]) {
+                    chatStore[chatId].title = data.chat_title;
+                    chatStore[chatId].backendChatId = data.chat_id;
+
+                    const titleElement = document.getElementById('currentChatTitle');
+                    if (titleElement) {
+                        titleElement.textContent = data.chat_title;
+                    }
 
                     window.history.pushState(
                         { chatId: data.chat_id },
                         '',
                         `/chat/${data.chat_id}/`
                     );
-
-                    const titleBar = document.querySelector('.chat-title-bar');
-                    const titleElement = document.getElementById('currentChatTitle');
-
-                    if (titleBar) {
-                        titleBar.classList.remove('hidden');
-                    }
-
-                    if (titleElement) {
-                        titleElement.textContent = data.chat_title;
-                    }
-                } else {
-                    const index = chatOrder.indexOf(chatId);
-                    if (index > 0) {
-                        chatOrder.splice(index, 1);
-                        chatOrder.unshift(chatId);
-                    }
+                    renderHistory();
                 }
 
                 chatStore[chatId].messages.push({
@@ -626,7 +745,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     chatPreview.scrollTop = chatPreview.scrollHeight;
                 }
 
-                renderHistory();
+                // renderHistory();
 
                 if (typeof playTTS === 'function') {
                     playTTS(data.assistant_message.content);
