@@ -91,12 +91,19 @@ document.addEventListener("DOMContentLoaded", function () {
         if (typeof window.stopVoiceRecording === 'function') {
             window.stopVoiceRecording();
         }
+
+        if (typeof window.stopVoiceRecording === 'function') {
+            window.stopVoiceRecording();
+        }
         const voiceModal = document.getElementById('voiceModal');
         const chatInputArea = document.querySelector('.chat-input-area');
         if (voiceModal && !voiceModal.classList.contains('hidden')) {
             voiceModal.classList.add('hidden');
             if (chatInputArea) {
                 chatInputArea.classList.remove('hidden');
+            }
+            if (chatScrollArea) {
+                chatScrollArea.classList.remove('hidden');
             }
         }
 
@@ -113,26 +120,6 @@ document.addEventListener("DOMContentLoaded", function () {
             titleElement.textContent = chatStore[chatId].title;
         }
         
-        // 메시지가 없으면 DB에서 로드
-        // if (chatStore[chatId].messages.length === 0 && chatStore[chatId].backendChatId) {
-        //     try {
-        //         const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
-        //         const data = await response.json();
-                
-        //         if (data.ok) {
-        //             chatStore[chatId].messages = data.messages.map(function(msg) {
-        //                 return {
-        //                     type: msg.role === 'user' ? 'user' : 'bot',
-        //                     text: msg.content,
-        //                     created_at: msg.created_at
-        //                 };
-        //             });
-        //         }
-        //     } catch (error) {
-        //         console.error('메시지 로드 오류:', error);
-        //     }
-        // }
-
         if (chatStore[chatId].backendChatId) {
             try {
                 const response = await fetch(`/chat/api/message/${chatStore[chatId].backendChatId}`);
@@ -238,7 +225,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const timeSpan = document.createElement("span");
         timeSpan.className = "chat-message-time";
-        // timeSpan.textContent = getCurrentTime();
 
         const date = new Date(timestamp);
         const today = new Date();
@@ -251,10 +237,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (isToday) {
             timeSpan.textContent = `${hours}:${minutes}`;
+            timeSpan.classList.add('today');
         } else {
             const month = String(date.getMonth() + 1).padStart(2, "0");
             const day = String(date.getDate()).padStart(2, "0");
             timeSpan.textContent = `${month}-${day} ${hours}:${minutes}`;
+            timeSpan.classList.add('past');
         }
 
         message.appendChild(textSpan);
@@ -320,7 +308,8 @@ document.addEventListener("DOMContentLoaded", function () {
         chatOrder.forEach(function (chatId) {
             const chat = chatStore[chatId];
 
-            if (!chat) return;
+            if (!chat) 
+                return;
 
             const li = document.createElement("li");
             li.dataset.chatId = chatId;
@@ -480,8 +469,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
-            
-            
 
             if (data.ok) {
                 if (chatStore[chatId]) {
@@ -498,7 +485,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         '',
                         `/chat/${data.chat_id}/`
                     );
-
                     renderHistory();
                 }
 
@@ -514,67 +500,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     created_at: data.assistant_message.created_at
                 });
 
-            // if (data.ok) {
-            //     if (!chatId || !chatStore[chatId]) {
-            //         chatId = makeChatId();
-            //         chatStore[chatId] = {
-            //             title: data.chat_title,
-            //             messages: [],
-            //             backendChatId: data.chat_id
-            //         };
-            //         chatOrder.unshift(chatId);
-            //         activeChatId = chatId;
-
-            //         window.history.pushState(
-            //             { chatId: data.chat_id },
-            //             '',
-            //             `/chat/${data.chat_id}/`
-            //         );
-
-            //         const titleBar = document.querySelector('.chat-title-bar');
-            //         const titleElement = document.getElementById('currentChatTitle');
-
-            //         if (titleBar) {
-            //             titleBar.classList.remove('hidden');
-            //         }
-
-            //         if (titleElement) {
-            //             titleElement.textContent = data.chat_title;
-            //         }
-            //     } else {
-            //         const index = chatOrder.indexOf(chatId);
-            //         if (index > 0) {
-            //             chatOrder.splice(index, 1);
-            //             chatOrder.unshift(chatId);
-            //         }
-            //         if (!chatStore[chatId].backendChatId) {
-            //             chatStore[chatId].backendChatId = data.chat_id;
-            //         }
-
-            //         window.history.replaceState(
-            //             { chatId: chatStore[chatId].backendChatId },
-            //             '',
-            //             `/chat/${chatStore[chatId].backendChatId}/`
-            //         );
-
-            //         const titleBar = document.querySelector('.chat-title-bar');
-            //         if (titleBar) {
-            //             titleBar.classList.remove('hidden');
-            //         }
-            //     }
-
-            //     chatStore[chatId].messages.push({
-            //         type: "user",
-            //         text: data.user_message.content,
-            //         created_at: data.user_message.created_at
-            //     });
-
-            //     chatStore[chatId].messages.push({
-            //         type: "bot",
-            //         text: data.assistant_message.content,
-            //         created_at: data.assistant_message.created_at
-            //     });
-
                 const tempBotMsg = document.getElementById(tempBotId);
                 if (tempBotMsg) {
                     const textSpan = tempBotMsg.querySelector('.chat-message-text');
@@ -583,7 +508,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     tempBotMsg.removeAttribute('id');
                 }
-
                 renderHistory();
 
                 if (typeof playTTS === 'function') {
@@ -633,8 +557,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (titleElement) {
                 titleElement.textContent = tempTitle;
             }
-
             renderHistory();
+
         } else {
             const index = chatOrder.indexOf(chatId);
             if (index > 0) {
@@ -663,42 +587,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             console.log('백엔드 응답:', data);
 
-            
-            // if (data.ok) {
-            //     if (!chatId || !chatStore[chatId]) {
-            //         chatId = makeChatId();
-            //         chatStore[chatId] = {
-            //             title: data.chat_title,
-            //             messages: [],
-            //             backendChatId: data.chat_id
-            //         };
-            //         chatOrder.unshift(chatId);
-            //         activeChatId = chatId;
-
-            //         window.history.pushState(
-            //             { chatId: data.chat_id },
-            //             '',
-            //             `/chat/${data.chat_id}/`
-            //         );
-
-            //         const titleBar = document.querySelector('.chat-title-bar');
-            //         const titleElement = document.getElementById('currentChatTitle');
-
-            //         if (titleBar) {
-            //             titleBar.classList.remove('hidden');
-            //         }
-
-            //         if (titleElement) {
-            //             titleElement.textContent = data.chat_title;
-            //         }
-            //     } else {
-            //         const index = chatOrder.indexOf(chatId);
-            //         if (index > 0) {
-            //             chatOrder.splice(index, 1);
-            //             chatOrder.unshift(chatId);
-            //         }
-            //     }
-    
             if (data.ok) {
                 if (chatStore[chatId]) {
                     chatStore[chatId].title = data.chat_title;
@@ -744,8 +632,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     chatPreview.innerHTML = chatMessageArea.innerHTML;
                     chatPreview.scrollTop = chatPreview.scrollHeight;
                 }
-
-                // renderHistory();
 
                 if (typeof playTTS === 'function') {
                     playTTS(data.assistant_message.content);
