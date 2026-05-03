@@ -785,9 +785,10 @@ document.addEventListener("DOMContentLoaded", function () {
         chatInput.addEventListener("input", updateTextCount);
 
         chatInput.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
                 sendCurrentMessage();
-            }
+}
         });
     }
 
