@@ -29,9 +29,8 @@ def _build_model_history(chat):
         history.append({'role': role, 'content': log.content})
     return history
 
-
 def _request_model_answer(content, chat, history):
-    model_server_url = getattr(settings, 'MODEL_SERVER_URL', 'http://127.0.0.1:8001').rstrip('/')
+    model_server_url = getattr(settings, 'MODEL_SERVER_URL', 'https://mgdi3hs7bpdqs9-8000.proxy.runpod.net/').rstrip('/')
     timeout = getattr(settings, 'MODEL_SERVER_TIMEOUT', 60)
     payload = {
         'message': content,
