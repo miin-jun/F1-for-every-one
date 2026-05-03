@@ -6,4 +6,4 @@
 /src/__pycache__
 /src/crawling/__pycache__
 /src/services/__pycache__
-.pyc
+.pycvectorstore/ 
