@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -69,7 +69,7 @@ DATABASES = {
         'NAME': 'f1_db',
         'USER': 'admin',
         'PASSWORD': os.getenv('DB_PASSWORD'),  
-        'HOST': 'for-everyone.c3kmkqc4izcv.ap-northeast-2.rds.amazonaws.com',  
+        'HOST': os.getenv('DB_HOST'), 
         'PORT': '3306', 
         'OPTIONS': {
             'charset': 'utf8mb4',
@@ -115,3 +115,8 @@ LOGIN_REDIRECT_URL = '/chat/'
 
 MODEL_SERVER_URL = os.getenv('MODEL_SERVER_URL', 'http://127.0.0.1:8001')
 MODEL_SERVER_TIMEOUT = int(os.getenv('MODEL_SERVER_TIMEOUT', '60'))
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev',
+]

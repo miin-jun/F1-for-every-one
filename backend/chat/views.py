@@ -1,7 +1,6 @@
 import io, json, os
 
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+import requests as req
 from django.conf import settings
 from dotenv import load_dotenv
 from gtts import gTTS
@@ -39,15 +38,12 @@ def _request_model_answer(content, chat, history):
         'history': history,
     }
 
-    request = Request(
-        f'{model_server_url}/ai/chat',
-        data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'},
-        method='POST',
+    response = req.post(
+    f'{model_server_url}/ai/chat',
+    json=payload,
+    timeout=timeout,
     )
-
-    with urlopen(request, timeout=timeout) as response:
-        data = json.loads(response.read().decode('utf-8'))
+    data = response.json()
 
     answer = data.get('answer', '').strip()
     if not answer:
@@ -99,13 +95,12 @@ def create_message(request):
     # 응답 생성
     try:
         assistant_content = _request_model_answer(content, chat, model_history)
-    except HTTPError as e:
-        error_body = e.read().decode('utf-8', errors='replace')
+    except req.exceptions.HTTPError as e:
         return JsonResponse({
             "ok": False,
-            "error": f"Model server error: {e.code} {error_body}",
+            "error": f"Model server error: {str(e)}",
         }, status=502)
-    except (URLError, TimeoutError, ValueError) as e:
+    except (req.exceptions.RequestException, TimeoutError, ValueError) as e:
         return JsonResponse({
             "ok": False,
             "error": f"Cannot connect to model server: {str(e)}",
