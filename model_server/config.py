@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 import os
-from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,7 +12,6 @@ sys.path.insert(0, str(model_server_dir))
 BASE_DIR = Path(__file__).resolve().parent
 
 class Settings:
-    AI_MODE: str = os.getenv("AI_MODE", "agent")
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4.1-nano-2025-04-14")
 
@@ -23,7 +21,7 @@ class Settings:
     )
 
     # 리랭커 설정 추가 🆕
-    USE_RERANKER: bool = os.getenv("USE_RERANKER", "true").lower() == "true"
+    USE_RERANKER: bool = os.getenv("USE_RERANKER", "false").lower() == "true"
     RERANKER_MODEL: str = os.getenv(
         "RERANKER_MODEL",
         "BAAI/bge-reranker-v2-m3"  # 평가 후 가장 좋은 모델로 변경 예정
@@ -38,12 +36,6 @@ class Settings:
     HYBRID_DENSE_K: int = int(os.getenv("HYBRID_DENSE_K", "20"))
     HYBRID_KEYWORD_K: int = int(os.getenv("HYBRID_KEYWORD_K", "20"))
     HYBRID_RRF_K: int = int(os.getenv("HYBRID_RRF_K", "60"))
-
-    STT_MODE: str = os.getenv("STT_MODE", "mock")
-    TTS_MODE: str = os.getenv("TTS_MODE", "mock")
-    OPENAI_STT_MODEL: str = os.getenv("OPENAI_STT_MODEL", "mock")
-    OPENAI_TTS_MODEL: str = os.getenv("OPENAI_TTS_MODEL", "mock")
-    OPENAI_TTS_VOICE: str = os.getenv("OPENAI_TTS_VOICE", "mock")
 
     FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://127.0.0.1:8000")
 
