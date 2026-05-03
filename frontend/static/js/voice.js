@@ -133,6 +133,11 @@ function openVoiceModal() {
             chatScrollArea.classList.add('hidden');
         }
 
+        const recommendSection = document.getElementById('recommendSection');
+        if (recommendSection) {
+            recommendSection.classList.add('hidden');
+        }
+
         voiceModal.classList.remove('hidden');
         
         const chatPreview = document.getElementById('voiceChatPreview');
