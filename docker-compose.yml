@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: f1-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      MODEL_SERVER_URL: http://model_server:8000
+      MODEL_SERVER_TIMEOUT: 60
+    ports:
+      - "8001:8000"
+    depends_on:
+      - model_server
+    restart: unless-stopped
+
+  model_server:
+    build:
+      context: .
+      dockerfile: model_server/Dockerfile
+    container_name: f1-model-server
+    env_file:
+      - ./model_server/.env
+    ports:
+      - "8002:8000"
+    restart: unless-stopped
