@@ -275,6 +275,10 @@ def route_external_tools(query: str) -> list[str]:
         if any(keyword in q for keyword in keywords):
             tool_names.append(tool_name)
 
+    # 외부 API 미호출 시 규정 용어 검색
+    if not tool_names:
+        tool_names.append("search_regulations")
+
     return dedupe(tool_names)
 
 
