@@ -1,5 +1,6 @@
-import io, json, os
+import io, json, os, requests
 
+from requests.exceptions import RequestException
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from django.conf import settings
@@ -29,24 +30,62 @@ def _build_model_history(chat):
         history.append({'role': role, 'content': log.content})
     return history
 
+# def _request_model_answer(content, chat, history):
+#     model_server_url = getattr(settings, 'MODEL_SERVER_URL', 'https://mgdi3hs7bpdqs9-8000.proxy.runpod.net/').rstrip('/')
+#     timeout = getattr(settings, 'MODEL_SERVER_TIMEOUT', 60)
+#     payload = {
+#         'message': content,
+#         'session_id': str(chat.chat_id),
+#         'history': history,
+#     }
+
+#     request = Request(
+#         f'{model_server_url}/ai/chat',
+#         data=json.dumps(payload).encode('utf-8'),
+#         headers={'Content-Type': 'application/json'},
+#         method='POST',
+#     )
+
+#     with urlopen(request, timeout=timeout) as response:
+#         data = json.loads(response.read().decode('utf-8'))
+
+#     answer = data.get('answer', '').strip()
+#     if not answer:
+#         raise ValueError('Model server returned an empty answer.')
+
+#     return answer
+
 def _request_model_answer(content, chat, history):
-    model_server_url = getattr(settings, 'MODEL_SERVER_URL', 'https://mgdi3hs7bpdqs9-8000.proxy.runpod.net/').rstrip('/')
+    model_server_url = getattr(
+        settings,
+        'MODEL_SERVER_URL',
+        'https://mgdi3hs7bpdqs9-8000.proxy.runpod.net/'
+    ).rstrip('/')
     timeout = getattr(settings, 'MODEL_SERVER_TIMEOUT', 60)
+
     payload = {
         'message': content,
         'session_id': str(chat.chat_id),
         'history': history,
     }
 
-    request = Request(
+    response = requests.post(
         f'{model_server_url}/ai/chat',
-        data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'},
-        method='POST',
+        json=payload,
+        timeout=timeout,
+        headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
     )
 
-    with urlopen(request, timeout=timeout) as response:
-        data = json.loads(response.read().decode('utf-8'))
+    if response.status_code >= 400:
+        raise RequestException(
+            f"Model server error: {response.status_code} {response.text}"
+        )
+
+    data = response.json()
 
     answer = data.get('answer', '').strip()
     if not answer:
@@ -98,18 +137,28 @@ def create_message(request):
     # 응답 생성
     try:
         assistant_content = _request_model_answer(content, chat, model_history)
-    except HTTPError as e:
-        error_body = e.read().decode('utf-8', errors='replace')
+    # except HTTPError as e:
+    #     error_body = e.read().decode('utf-8', errors='replace')
+    #     return JsonResponse({
+    #         "ok": False,
+    #         "error": f"Model server error: {e.code} {error_body}",
+    #     }, status=502)
+    # except (URLError, TimeoutError, ValueError) as e:
+    #     return JsonResponse({
+    #         "ok": False,
+    #         "error": f"Cannot connect to model server: {str(e)}",
+    #     }, status=502)
+
+    except RequestException as e:
         return JsonResponse({
             "ok": False,
-            "error": f"Model server error: {e.code} {error_body}",
+            "error": f"Model server error: {str(e)}",
         }, status=502)
-    except (URLError, TimeoutError, ValueError) as e:
+    except (TimeoutError, ValueError) as e:
         return JsonResponse({
             "ok": False,
             "error": f"Cannot connect to model server: {str(e)}",
         }, status=502)
-
     assistant_message = ChatLog.objects.create(
         chat=chat,
         role='system',
