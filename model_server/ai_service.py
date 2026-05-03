@@ -67,6 +67,15 @@ def get_tool_names(tools: list[dict[str, Any]]) -> list[str]:
     return [tool["name"] for tool in tools]
 
 
+def get_tool_choice(tools: list[dict[str, Any]]) -> str:
+    tool_names = get_tool_names(tools)
+
+    if tool_names == ["search_regulations"]:
+        return "required"
+
+    return "auto"
+
+
 async def create_chat_answer(
     request: ChatRequest,
     debug: bool = False,
@@ -89,18 +98,20 @@ async def create_chat_answer(
 
 async def generate_agent_answer(request: ChatRequest) -> tuple[str, list[str], dict[str, Any]]:
     tools = build_agent_tools(request.message)
+    tool_choice = get_tool_choice(tools)
     response = client.responses.create(
         model=Settings.OPENAI_MODEL,
         instructions=F1_SYSTEM_PROMPT,
         input=build_input_messages(request),
         tools=tools,
-        tool_choice="auto",
+        tool_choice=tool_choice,
     )
 
     tools_used: list[str] = []
     tool_outputs = []
     debug_info: dict[str, Any] = {
         "available_tools": get_tool_names(tools),
+        "tool_choice": tool_choice,
         "tool_calls": [],
     }
 
