@@ -32,8 +32,7 @@ def get_current_session():
     """현재 진행 중인 세션 반환 (없으면 최근 세션 반환)"""
     response = requests.get(f"{BASE_URL}/sessions", params={"session_type": "Race"}, headers=API_HEADERS)
     sessions = response.json()
-    
-    # ⭐ 디버깅: 응답 확인
+
     if not isinstance(sessions, list):
         print("에러 응답:", sessions)
         raise ValueError(f"API 에러: {sessions}")
@@ -133,7 +132,6 @@ def get_meetings(year):
         params["year"] = year
     response = requests.get(f"{BASE_URL}/meetings", params=params, headers=API_HEADERS)
     return response.json()
-
 
 def get_overtakes(session_key):
     """오버테이크 기록 반환"""
