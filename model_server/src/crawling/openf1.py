@@ -134,7 +134,6 @@ def get_meetings(year):
     response = requests.get(f"{BASE_URL}/meetings", params=params, headers=API_HEADERS)
     return response.json()
 
-
 def get_overtakes(session_key):
     """오버테이크 기록 반환"""
     response = requests.get(f"{BASE_URL}/overtakes", params={"session_key": session_key}, headers=API_HEADERS)
