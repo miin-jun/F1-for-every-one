@@ -1,0 +1,217 @@
+
+import random
+import string
+
+from django.contrib.auth import authenticate, login, logout
+from django.core.cache import cache
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+
+from .models import User
+
+def _get_cache_key(email):
+    return f"signup_code:{email}"
+
+@csrf_exempt
+def login_index(request):
+    if request.method == "GET":
+        return redirect("/")  # 시작 페이지로 이동
+
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '').strip()
+    
+    if not email or not password:
+        return JsonResponse({"ok": False, "error": "이메일과 비밀번호를 입력해주세요."}, status=400)
+    
+    user = authenticate(request, username=email, password=password)
+    
+    if user is not None:
+        login(request, user)
+        return JsonResponse({"ok": True, "redirect": "/chat/"})
+    else:
+        return JsonResponse({"ok": False, "error": "이메일 또는 비밀번호가 일치하지 않습니다."})
+    
+
+
+@csrf_exempt
+@require_POST
+def logout_index(request):
+    if request.user.is_authenticated:
+        logout(request)
+        return JsonResponse({"ok": True, "redirect": "/"})
+    
+    return JsonResponse({"ok": False, "error": "로그인 상태가 아닙니다."}, status=400)
+
+@csrf_exempt
+@require_POST
+def check_email(request):
+    email = request.POST.get("email", "").strip()
+    if not email:
+        return JsonResponse({"ok": False, "error": "이메일을 입력해주세요."}, status=400)
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"ok": False, "error": "duplicate"})
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@require_POST
+def send_code(request):
+    email = request.POST.get("email", "").strip()
+    purpose = request.POST.get("purpose", "signup")  # signup 또는 reset
+
+    if not email:
+        return JsonResponse({"ok": False, "error": "이메일을 입력해주세요."}, status=400)
+
+    # 비밀번호 찾기일 때만 가입 여부 확인
+    if purpose == "reset":
+        if not User.objects.filter(email=email).exists():
+            return JsonResponse({"ok": False, "error": "가입되지 않은 이메일입니다."})
+
+    code = "".join(random.choices(string.digits, k=6))
+    cache.set(_get_cache_key(email), code, timeout=180)
+
+    send_mail(
+        subject="[For everyOne] 인증코드 안내",
+        message=f"인증코드: {code}\n\n인증코드는 3분간 유효합니다.",
+        from_email=None,
+        recipient_list=[email],
+    )
+
+    return JsonResponse({"ok": True})
+
+@csrf_exempt
+@require_POST
+def verify_code(request):
+    email = request.POST.get("email", "").strip()
+    code = request.POST.get("code", "").strip()
+
+    if not email or not code:
+        return JsonResponse({"ok": False, "error": "이메일과 인증코드를 입력해주세요."}, status=400)
+
+    cached_code = cache.get(_get_cache_key(email))
+
+    if not cached_code:
+        return JsonResponse({"ok": False, "error": "인증코드가 만료되었습니다."})
+
+    if cached_code != code:
+        return JsonResponse({"ok": False, "error": "인증코드가 일치하지 않습니다."})
+
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@require_POST
+def signup(request):
+    email = request.POST.get("email", "").strip()
+    password = request.POST.get("password", "").strip()
+
+    if not email or not password:
+        return JsonResponse({"ok": False, "error": "이메일과 비밀번호를 입력해주세요."}, status=400)
+
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"ok": False, "error": "이미 가입된 이메일입니다."})
+
+    User.objects.create_user(email=email, password=password)
+
+    return JsonResponse({"ok": True}, status=201)
+
+
+@csrf_exempt
+@require_POST
+def verify_current_password(request):
+    """현재 비밀번호 확인"""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "로그인이 필요합니다."}, status=401)
+    
+    current_password = request.POST.get("current_password", "").strip()
+
+    if not current_password:
+        return JsonResponse({"ok": False, "error": "현재 비밀번호를 입력해주세요."}, status=400)
+    
+    if request.user.check_password(current_password):
+        return JsonResponse({"ok": True})
+    else:
+        return JsonResponse({"ok": False, "error": "현재 비밀번호가 일치하지 않습니다."})
+    
+@csrf_exempt
+@require_POST
+def change_password(request):
+    """비밀번호 변경"""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "로그인이 필요합니다."}, status=401)
+    
+    current_password = request.POST.get("current_password", "").strip()
+    new_password = request.POST.get("new_password", "").strip()
+    
+    if not current_password or not new_password:
+        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
+    
+    
+    if not request.user.check_password(current_password):
+        return JsonResponse({"ok": False, "error": "현재 비밀번호가 일치하지 않습니다."})
+    
+    # 새 비밀번호로 변경
+    request.user.set_password(new_password)
+    request.user.save()
+    
+    logout(request)
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+def withdraw(request):
+    if request.method == "GET":
+        return render(request, "withdraw/withdraw.html")
+
+    password = request.POST.get("password")
+
+    if not request.user.check_password(password):
+        return render(request, "withdraw/withdraw.html", {"error": "비밀번호가 일치하지 않습니다."})
+
+    # 비밀번호 확인 완료 → 세션에 저장 후 확인 페이지로 이동
+    request.session['withdraw_verified'] = True
+    return redirect("accounts:withdraw_confirm")
+
+
+@login_required
+def withdraw_confirm(request):
+    # 비밀번호 인증 없이 직접 접근 차단
+    if not request.session.get('withdraw_verified'):
+        return redirect("accounts:withdraw")
+
+    if request.method == "POST":
+        request.session.pop('withdraw_verified', None)
+        request.user.delete()
+        logout(request)
+        return redirect("accounts:withdraw_done")
+
+    return render(request, "withdraw/withdraw_confirm.html")
+
+
+def withdraw_done(request):
+    return render(request, "withdraw/withdraw_done.html")
+
+@csrf_exempt
+@require_POST
+def reset_password(request):
+    """비밀번호 찾기 후 재설정 - 로그인 없이 가능"""
+    email = request.POST.get("email", "").strip()
+    new_password = request.POST.get("new_password", "").strip()
+
+    if not email or not new_password:
+        return JsonResponse({"ok": False, "error": "모든 항목을 입력해주세요."}, status=400)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "존재하지 않는 이메일입니다."}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+
+    return JsonResponse({"ok": True})

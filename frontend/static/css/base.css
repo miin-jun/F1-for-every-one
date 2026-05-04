@@ -1,1 +1,112 @@
+
+/* 모든 페이지 공통된 스타일 (폰트, 색상, 로고) */
+
+/* 전체 요소 기본 설정 */
+* {
+    box-sizing: border-box;
+}
+
+/* 기본 페이지 설정 */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #050505;
+    color: #ffffff;
+}
+
+/* 링크 기본 스타일 제거 */
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* 버튼 기본 스타일 */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+}
+
+/* input 기본 스타일 */
+input {
+    font-family: inherit;
+    outline: none;
+}
+
+/* 전체 앱 컨테이너 */
+.app-container {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 공통 헤더 */
+.app-header {
+    position: fixed;
+    top: 24px;
+    left: 32px;
+    z-index: 100;
+}
+
+/* 공통 로고 */
+.logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+/* 페이지 실제 내용 영역 */
+.page-content {
+    min-height: 100vh;
+}
+
+/* 숨김 처리 */
+.hidden {
+    display: none;}
+
 /* 모든 페이지 공통된 스타일 (폰트, 색상 , 로고) */
+
+
+body {
+    background-image: url('../images/background.png');
+    background-size: cover;      
+    background-position: center; 
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
+
+.logo {
+    position: fixed;   
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+.logo img {
+    width: 40px;   
+    height: 40px;
+
+}

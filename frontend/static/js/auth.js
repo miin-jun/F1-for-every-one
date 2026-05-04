@@ -1,1 +1,88 @@
 //로그인 , 회원가입, 비밀번호
+
+function isValidEmail(email) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+}
+
+// 로그인
+document.addEventListener('DOMContentLoaded', () => {
+    const loginBtn = document.getElementById('loginSubmitBtn');
+    const loginEmailInput = document.getElementById('loginEmail');
+    const loginEmailError = document.getElementById('loginEmailError');
+
+    if (loginEmailInput) {
+        loginEmailInput.addEventListener('input', () => {
+            if (loginEmailError) {
+                loginEmailInput.classList.remove('input-error-active');
+                loginEmailError.classList.add('hidden');
+            }
+        });
+    }
+
+    const loginPasswordInput = document.getElementById('loginPasswordDisplay');
+    if (loginPasswordInput) {
+        loginPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (loginBtn) loginBtn.click();  // 로그인 버튼 클릭과 동일하게 동작
+            }
+        });
+    }
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPasswordReal').value;
+            
+            // 에러 메시지 초기화
+            document.getElementById('loginPasswordError').classList.add('hidden');
+             if (loginEmailError) {
+                loginEmailError.classList.add('hidden');
+                if (loginEmailInput) {
+                    loginEmailInput.classList.remove('input-error-active');
+                }
+            }
+            
+            if (!email || !password) {
+                document.getElementById('loginPasswordError').textContent = '× 이메일과 비밀번호를 입력해주세요.';
+                document.getElementById('loginPasswordError').classList.remove('hidden');
+                return;
+            }
+
+            // 이메일 형식 검사
+            if (!isValidEmail(email)) {
+                if (loginEmailError && loginEmailInput) {
+                    loginEmailInput.classList.add('input-error-active');
+                    loginEmailError.classList.remove('hidden');
+                }
+                return;
+            }
+            
+            try {
+                const response = await fetch('/accounts/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    document.getElementById('loginPasswordError').textContent = '× 비밀번호가 일치하지 않습니다.';
+                    document.getElementById('loginPasswordError').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('로그인 에러:', error);
+                document.getElementById('loginPasswordError').textContent = '× 로그인 중 오류가 발생했습니다.';
+                document.getElementById('loginPasswordError').classList.remove('hidden');
+            }
+        });
+    }
+});

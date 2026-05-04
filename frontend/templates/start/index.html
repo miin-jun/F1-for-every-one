@@ -1,1 +1,29 @@
-{% comment %} 시작 페이지, 로그인 , 호이ㅝㄴ가입, 비밀번호 찾기 모달 등 {% endcomment %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}For everyOne{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/start.css' %}">
+<link rel="stylesheet" href="{% static 'css/modal.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="start-page">
+    {% include "start/components/start_header.html" %}
+    {% include "start/components/start_content.html" %}
+</section>
+{% endblock %}
+
+{% block modal %}
+    {% include "start/components/modals/login_modal.html" %}
+    {% include "start/components/modals/signup_terms_modal.html" %}
+    {% include "start/components/modals/signup_form_modal.html" %}
+    {% include "start/components/modals/password_email_modal.html" %}
+    {% include "start/components/modals/password_reset_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/modal.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}
