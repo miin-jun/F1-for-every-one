@@ -37,6 +37,6 @@ class Settings:
     HYBRID_KEYWORD_K: int = int(os.getenv("HYBRID_KEYWORD_K", "20"))
     HYBRID_RRF_K: int = int(os.getenv("HYBRID_RRF_K", "60"))
 
-    FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "https://cbha369q6wksaa-8501.proxy.runpod.net/")
+    FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://127.0.0.1:8001")
 
 settings = Settings()

@@ -51,7 +51,6 @@
     background-color: #c92a2a;
 }
 
-/* 아니오 버튼 - 빨간색 */
 .cancel-btn {
     width: 160px;
     padding: 14px;
@@ -67,7 +66,6 @@
     background-color: #c92a2a;
 }
 
-/* 네 버튼 - 회색 */
 .withdraw-btn {
     width: 160px;
     padding: 14px;
