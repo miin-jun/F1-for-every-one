@@ -17,8 +17,8 @@ let audioContext = null;
 let analyser = null;
 let silenceDetectionInterval = null;
 let currentAudio = null; 
-let shouldProcessSTT = true;  // STT 처리 여부 플래그
-let hasSpoken = false;  // 한 번이라도 말했는지 플래그 
+let shouldProcessSTT = true;
+let hasSpoken = false;
 
 function stopRecordingAndCleanup() {
     const circleAnimation = document.querySelector('.voice-circle-animation');
@@ -454,7 +454,7 @@ async function transcribeAudio(audioBlob) {
                 chatPreview.scrollTop = chatPreview.scrollHeight;
             }
 
-            await new Promise(resolve => setTimeout(resolve, 50));  // 브라우저에게 화면 업데이트 기회 줌 => 모델 연결 후 50을 0으로 교체할 것
+            await new Promise(resolve => setTimeout(resolve, 0));  // 브라우저에게 화면 업데이트 기회 줌 => 모델 연결 후 50을 0으로 교체할 것
             console.log('화면 업데이트 대기 완료');
 
             // 3. 백엔드 요청
