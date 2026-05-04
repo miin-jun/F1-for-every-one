@@ -204,7 +204,7 @@ def chunk_all(glossary, other_docs, regulation_docs) -> list[Document]:
 def save_to_chroma(chunks: list[Document]):
     embedding_model = HuggingFaceEmbeddings(
         model_name="intfloat/multilingual-e5-large",
-        model_kwargs={"device": "cuda"},
+        model_kwargs={"device": "cpu"},
         encode_kwargs={
             "normalize_embeddings": True,
             "prompt": "passage: "
