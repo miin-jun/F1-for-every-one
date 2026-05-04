@@ -11,4 +11,8 @@ db.sqlite3
 # Local backup
 local_backup/
 
+
 .env
+
+penguin.pem
+
